@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../controllers/fire_calculator_controller.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/pinned_dashboard_header.dart';
 import 'calculator_screen.dart';
 import 'comparison_screen.dart';
 import 'dashboard_screen.dart';
@@ -83,9 +84,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             if (isMobile) {
               // Mobile (< 600dp): Bottom NavigationBar
               return Scaffold(
-                body: IndexedStack(
-                  index: _currentIndex,
-                  children: screens,
+                body: SafeArea(
+                  child: Column(
+                    children: [
+                      PinnedDashboardHeader(controller: widget.controller),
+                      Expanded(
+                        child: IndexedStack(
+                          index: _currentIndex,
+                          children: screens,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 bottomNavigationBar: NavigationBar(
                   selectedIndex: _currentIndex,
@@ -224,9 +234,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   ),
                   const VerticalDivider(thickness: 1, width: 1, color: AppTheme.borderLight),
                   Expanded(
-                    child: IndexedStack(
-                      index: _currentIndex,
-                      children: screens,
+                    child: Column(
+                      children: [
+                        PinnedDashboardHeader(controller: widget.controller),
+                        Expanded(
+                          child: IndexedStack(
+                            index: _currentIndex,
+                            children: screens,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

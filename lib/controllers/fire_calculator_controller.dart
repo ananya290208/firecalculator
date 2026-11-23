@@ -128,15 +128,35 @@ class FireCalculatorController extends ChangeNotifier {
   void updateCash({
     double? cashInHand,
     double? fixedDeposits,
+    List<DebtHolding>? holdings,
     double? expectedReturn,
     double? emergencyFundMonths,
   }) {
     final updatedCash = _physicalAssetsInputs.cash.copyWith(
       cashInHand: cashInHand,
       fixedDeposits: fixedDeposits,
+      holdings: holdings,
       expectedReturn: expectedReturn,
       emergencyFundMonths: emergencyFundMonths,
     );
+    updatePhysicalAssets(_physicalAssetsInputs.copyWith(cash: updatedCash));
+  }
+
+  void addDebtHolding(DebtHolding holding) {
+    final list = List<DebtHolding>.from(_physicalAssetsInputs.cash.holdings)..add(holding);
+    final updatedCash = _physicalAssetsInputs.cash.copyWith(holdings: list);
+    updatePhysicalAssets(_physicalAssetsInputs.copyWith(cash: updatedCash));
+  }
+
+  void updateDebtHolding(DebtHolding updated) {
+    final list = _physicalAssetsInputs.cash.holdings.map((h) => h.id == updated.id ? updated : h).toList();
+    final updatedCash = _physicalAssetsInputs.cash.copyWith(holdings: list);
+    updatePhysicalAssets(_physicalAssetsInputs.copyWith(cash: updatedCash));
+  }
+
+  void removeDebtHolding(String id) {
+    final list = _physicalAssetsInputs.cash.holdings.where((h) => h.id != id).toList();
+    final updatedCash = _physicalAssetsInputs.cash.copyWith(holdings: list);
     updatePhysicalAssets(_physicalAssetsInputs.copyWith(cash: updatedCash));
   }
 
@@ -203,6 +223,8 @@ class FireCalculatorController extends ChangeNotifier {
   }
 
   void resetToBlank() {
+    _physicalAssetsInputs = const PhysicalAssetsInputs();
+    _emiInputs = const LiabilitiesEmiInputs();
     updateInputs(const FireInputs(), autoSave: false);
   }
 

@@ -228,36 +228,133 @@ class GoldAssets {
   }
 }
 
+/// Represents an individual FD, Debt Fund, Bond, or Liquid holding
+class DebtHolding {
+  final String id;
+  final String name; // e.g. "HDFC Fixed Deposit", "ICICI Prudential Liquid Fund"
+  final String category; // e.g. "Fixed Deposit", "Fixed Debt Funds", "Liquid Funds", "Govt Bonds / T-Bills"
+  final double value; // Principal / Invested value (₹)
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final double returnRate; // Annualized return % (e.g. 0.071 for 7.1% p.a.)
+
+  const DebtHolding({
+    required this.id,
+    required this.name,
+    this.category = 'Fixed Deposit',
+    this.value = 0.0,
+    this.startDate,
+    this.endDate,
+    this.returnRate = 0.065,
+  });
+
+  /// Duration in years based on start and end dates (if provided)
+  double get tenureYears {
+    if (startDate == null || endDate == null) return 0.0;
+    final diffDays = endDate!.difference(startDate!).inDays;
+    return diffDays > 0 ? diffDays / 365.25 : 0.0;
+  }
+
+  /// Calculates compounding value at target retirement horizon (years)
+  double projectedValueAt(double targetYears) {
+    if (value <= 0) return 0.0;
+    return value * pow(1.0 + returnRate, targetYears);
+  }
+
+  DebtHolding copyWith({
+    String? id,
+    String? name,
+    String? category,
+    double? value,
+    DateTime? startDate,
+    DateTime? endDate,
+    double? returnRate,
+  }) {
+    return DebtHolding(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      category: category ?? this.category,
+      value: value ?? this.value,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      returnRate: returnRate ?? this.returnRate,
+    );
+  }
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'name': name,
+        'category': category,
+        'value': value,
+        'startDate': startDate?.toIso8601String(),
+        'endDate': endDate?.toIso8601String(),
+        'returnRate': returnRate,
+      };
+
+  factory DebtHolding.fromMap(Map<String, dynamic> map) {
+    return DebtHolding(
+      id: map['id'] as String? ?? '',
+      name: map['name'] as String? ?? '',
+      category: map['category'] as String? ?? 'Fixed Deposit',
+      value: (map['value'] as num?)?.toDouble() ?? 0.0,
+      startDate: map['startDate'] != null ? DateTime.tryParse(map['startDate'] as String) : null,
+      endDate: map['endDate'] != null ? DateTime.tryParse(map['endDate'] as String) : null,
+      returnRate: (map['returnRate'] as num?)?.toDouble() ?? 0.065,
+    );
+  }
+}
+
 /// Represents Cash, Savings, FDs, and Liquid emergency funds
 class CashAssets {
   final double cashInHand; // Physical cash + Savings accounts
-  final double fixedDeposits; // Bank FDs, Liquid Mutual Funds, T-Bills
+  final double fixedDeposits; // Direct manual entry (Bank FDs, Liquid Mutual Funds, T-Bills)
+  final List<DebtHolding> holdings; // Itemized individual FDs, Debt funds, etc.
   final double expectedReturn; // e.g. 0.065 for 6.5% p.a.
   final double emergencyFundMonths; // Number of months expenses locked as pure emergency buffer (e.g. 6)
 
   const CashAssets({
     this.cashInHand = 0.0,
     this.fixedDeposits = 0.0,
+    this.holdings = const [],
     this.expectedReturn = 0.065,
     this.emergencyFundMonths = 6.0,
   });
 
-  double get totalCashAndDeposits => cashInHand + fixedDeposits;
+  /// Total sum of all individual debt/FD holdings
+  double get totalHoldingsValue => holdings.fold(0.0, (sum, h) => sum + h.value);
 
+  /// Effective total of FDs and debt holdings:
+  /// Combines any direct fixedDeposits with all itemized holdings.
+  double get effectiveFixedDeposits =>
+      holdings.isNotEmpty ? (totalHoldingsValue + fixedDeposits) : fixedDeposits;
+
+  /// Combined total of cash in hand, direct deposits, and all individual holdings
+  double get totalCashAndDeposits => cashInHand + effectiveFixedDeposits;
+
+  /// Compounded projected value at target horizon
   double projectedCashAt(double years) {
     if (totalCashAndDeposits <= 0) return 0.0;
+    if (holdings.isNotEmpty) {
+      double proj = (cashInHand + fixedDeposits) * pow(1.0 + expectedReturn, years);
+      for (final h in holdings) {
+        proj += h.projectedValueAt(years);
+      }
+      return proj;
+    }
     return totalCashAndDeposits * pow(1.0 + expectedReturn, years);
   }
 
   CashAssets copyWith({
     double? cashInHand,
     double? fixedDeposits,
+    List<DebtHolding>? holdings,
     double? expectedReturn,
     double? emergencyFundMonths,
   }) {
     return CashAssets(
       cashInHand: cashInHand ?? this.cashInHand,
       fixedDeposits: fixedDeposits ?? this.fixedDeposits,
+      holdings: holdings ?? this.holdings,
       expectedReturn: expectedReturn ?? this.expectedReturn,
       emergencyFundMonths: emergencyFundMonths ?? this.emergencyFundMonths,
     );
@@ -266,6 +363,7 @@ class CashAssets {
   Map<String, dynamic> toMap() => {
         'cashInHand': cashInHand,
         'fixedDeposits': fixedDeposits,
+        'holdings': holdings.map((h) => h.toMap()).toList(),
         'expectedReturn': expectedReturn,
         'emergencyFundMonths': emergencyFundMonths,
       };
@@ -274,6 +372,10 @@ class CashAssets {
     return CashAssets(
       cashInHand: (map['cashInHand'] as num?)?.toDouble() ?? 0.0,
       fixedDeposits: (map['fixedDeposits'] as num?)?.toDouble() ?? 0.0,
+      holdings: (map['holdings'] as List<dynamic>?)
+              ?.map((e) => DebtHolding.fromMap(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
       expectedReturn: (map['expectedReturn'] as num?)?.toDouble() ?? 0.065,
       emergencyFundMonths: (map['emergencyFundMonths'] as num?)?.toDouble() ?? 6.0,
     );
@@ -352,6 +454,7 @@ class PhysicalAssetsResults {
   final double cashInHand;
   final double fixedDeposits;
   final double totalCashAndDeposits;
+  final List<DebtHolding> holdings;
 
   final double totalPhysicalAssets;
   final double totalPhysicalLiabilities;
@@ -382,6 +485,7 @@ class PhysicalAssetsResults {
     required this.cashInHand,
     required this.fixedDeposits,
     required this.totalCashAndDeposits,
+    this.holdings = const [],
     required this.totalPhysicalAssets,
     required this.totalPhysicalLiabilities,
     required this.netPhysicalEquity,

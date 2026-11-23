@@ -168,5 +168,56 @@ void main() {
       // Because expenses are lower, lifestyle FIRE target is lower than un-offset baseline!
       expect(summary.lifestyleFire25x, lessThan(defaultFireResults.fireTarget25x));
     });
+
+    test('3. Individual FD and Debt Holdings calculate total deposits and compound correctly', () {
+      final startDate = DateTime(2024, 1, 1);
+      final endDate = DateTime(2027, 1, 1);
+      final physicalInputs = PhysicalAssetsInputs(
+        cash: CashAssets(
+          cashInHand: 200000.0, // 2 Lakhs
+          fixedDeposits: 0.0,
+          holdings: [
+            DebtHolding(
+              id: 'fd_1',
+              name: 'HDFC 3Y FD',
+              category: 'Fixed Deposit',
+              value: 1000000.0, // 10 Lakhs
+              startDate: startDate,
+              endDate: endDate,
+              returnRate: 0.071, // 7.1%
+            ),
+            DebtHolding(
+              id: 'debt_fund_1',
+              name: 'ICICI Liquid Debt Fund',
+              category: 'Fixed Debt Funds',
+              value: 500000.0, // 5 Lakhs
+              startDate: startDate,
+              endDate: endDate,
+              returnRate: 0.068, // 6.8%
+            ),
+          ],
+        ),
+      );
+
+      final physicalResults = PhysicalAssetsService.calculate(
+        inputs: physicalInputs,
+        targetYears: 3.0,
+      );
+
+      // Total holdings = 10L + 5L = 15L
+      expect(physicalInputs.cash.totalHoldingsValue, 1500000.0);
+      expect(physicalInputs.cash.effectiveFixedDeposits, 1500000.0);
+      // Total cash and deposits = 2L cash + 15L holdings = 17 Lakhs
+      expect(physicalResults.totalCashAndDeposits, 1700000.0);
+      expect(physicalResults.holdings.length, 2);
+
+      // Compounding:
+      // 10L at 7.1% for 3 years: 1000000 * (1.071)^3 = ~1,228,443
+      // 5L at 6.8% for 3 years: 500000 * (1.068)^3 = ~609,141
+      // 2L cash at 6.5% for 3 years: 200000 * (1.065)^3 = ~241,589
+      // Total projected cash = ~2,079,173
+      expect(physicalResults.projectedCashAtRetirement, greaterThan(2050000.0));
+      expect(physicalResults.projectedCashAtRetirement, lessThan(2100000.0));
+    });
   });
 }

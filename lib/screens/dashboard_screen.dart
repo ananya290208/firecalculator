@@ -33,6 +33,187 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  void _showAddDebtHoldingDialog(BuildContext context, [DebtHolding? existing]) {
+    final nameCtrl = TextEditingController(text: existing?.name ?? 'Fixed Deposit');
+    final valCtrl = TextEditingController(
+        text: existing != null && existing.value > 0 ? existing.value.toStringAsFixed(0) : '');
+    final returnCtrl = TextEditingController(
+        text: existing != null ? (existing.returnRate * 100.0).toStringAsFixed(2) : '7.10');
+
+    String selectedCategory = existing?.category ?? 'Fixed Deposit';
+    final categories = [
+      'Fixed Deposit',
+      'Fixed Debt Funds',
+      'Liquid Funds',
+      'Recurring Deposit',
+      'Treasury Bills / Govt Bonds',
+      'Corporate Bonds',
+      'Other Debt Holding',
+    ];
+    if (!categories.contains(selectedCategory)) {
+      categories.insert(0, selectedCategory);
+    }
+
+    DateTime? startDate = existing?.startDate ?? DateTime.now();
+    DateTime? endDate = existing?.endDate ?? DateTime.now().add(const Duration(days: 1095));
+
+    String formatDate(DateTime? d) {
+      if (d == null) return 'Select Date';
+      return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final diffDays = (startDate != null && endDate != null) ? endDate!.difference(startDate!).inDays : 0;
+          final tenureYears = diffDays > 0 ? (diffDays / 365.25).toStringAsFixed(1) : '0';
+
+          return AlertDialog(
+            title: Text(existing == null ? 'Add FD / Debt Holding' : 'Edit Holding'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: selectedCategory,
+                    decoration: const InputDecoration(labelText: 'Category'),
+                    items: categories.map((cat) {
+                      return DropdownMenuItem(value: cat, child: Text(cat, style: const TextStyle(fontSize: 13)));
+                    }).toList(),
+                    onChanged: (v) {
+                      if (v != null) setDialogState(() => selectedCategory = v);
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: nameCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Holding Name / Bank',
+                      hintText: 'e.g. HDFC 3Y FD, ICICI Liquid Fund',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: valCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Invested Value / Principal (₹)',
+                      prefixText: '₹ ',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: returnCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Annual Return / Interest (%)',
+                      suffixText: '% p.a.',
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Dates Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.calendar_today_rounded, size: 14),
+                          label: Text(
+                            'Start: ${formatDate(startDate)}',
+                            style: const TextStyle(fontSize: 10),
+                          ),
+                          onPressed: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: startDate ?? DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2060),
+                            );
+                            if (picked != null) {
+                              setDialogState(() => startDate = picked);
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.event_available_rounded, size: 14),
+                          label: Text(
+                            'End: ${formatDate(endDate)}',
+                            style: const TextStyle(fontSize: 10),
+                          ),
+                          onPressed: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: endDate ?? (startDate?.add(const Duration(days: 365)) ?? DateTime.now()),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2060),
+                            );
+                            if (picked != null) {
+                              setDialogState(() => endDate = picked);
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (diffDays > 0) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      'Calculated Duration: $tenureYears years ($diffDays days)',
+                      style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              if (existing != null)
+                TextButton(
+                  onPressed: () {
+                    widget.controller.removeDebtHolding(existing.id);
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final double val = double.tryParse(valCtrl.text.replaceAll(',', '')) ?? 0.0;
+                  final double ret = (double.tryParse(returnCtrl.text) ?? 6.5) / 100.0;
+                  final holding = DebtHolding(
+                    id: existing?.id ?? 'debt_${DateTime.now().millisecondsSinceEpoch}',
+                    name: nameCtrl.text.trim().isEmpty ? selectedCategory : nameCtrl.text.trim(),
+                    category: selectedCategory,
+                    value: val,
+                    startDate: startDate,
+                    endDate: endDate,
+                    returnRate: ret,
+                  );
+
+                  if (existing == null) {
+                    widget.controller.addDebtHolding(holding);
+                  } else {
+                    widget.controller.updateDebtHolding(holding);
+                  }
+                  Navigator.pop(ctx);
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   void _showAddApartmentDialog(BuildContext context, [ApartmentProperty? existing]) {
     final nameCtrl = TextEditingController(text: existing?.name ?? 'Apartment');
     final valCtrl = TextEditingController(
@@ -300,7 +481,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final summary = widget.controller.dashboardSummary;
         final physicalInputs = widget.controller.physicalAssetsInputs;
         final physicalResults = widget.controller.physicalAssetsResults;
-        final fireInputs = widget.controller.inputs;
 
         return Scaffold(
           appBar: AppBar(
@@ -337,15 +517,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // 1. Executive Master Hero Card (Net Worth & FIRE Readiness)
-                          _buildExecutiveHeroCard(summary, isMobile),
-                          const SizedBox(height: 16),
-
-                          // 2. Horizon quick-toggle chips
-                          _buildHorizonChips(fireInputs.targetYears),
-                          const SizedBox(height: 16),
-
-                          // 3. Asset Allocation Breakdown Bar & Legend
+                          // 1. Asset Allocation Breakdown Bar & Legend
                           _buildAssetAllocationSection(summary, isMobile),
                           const SizedBox(height: 20),
 
@@ -413,228 +585,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildExecutiveHeroCard(ComprehensiveFireSummary summary, bool isMobile) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0F766E)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.35),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      padding: EdgeInsets.all(isMobile ? 16 : 22),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Row: Tag + Readiness Badge
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'COMPREHENSIVE FIRE EXECUTIVE DASHBOARD',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.0,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: summary.isFireReady
-                      ? const Color(0xFF10B981).withOpacity(0.9)
-                      : const Color(0xFFF59E0B).withOpacity(0.9),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  summary.readinessStatus,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 11,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // Two Primary Figures: Total Net Worth & Projected FIRE Corpus
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'TOTAL NET WORTH TODAY',
-                      style: TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 4),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        CurrencyFormatter.formatCrores(summary.totalNetWorth / 10000000.0),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 26,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        CurrencyFormatter.formatINR(summary.totalNetWorth),
-                        style: const TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(width: 1, height: 50, color: Colors.white24),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'PROJECTED FIRE CORPUS (YR ${summary.targetYears.toInt()})',
-                      style: const TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 4),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        CurrencyFormatter.formatCrores(summary.totalProjectedFireCorpus / 10000000.0),
-                        style: const TextStyle(
-                          color: Color(0xFF34D399),
-                          fontSize: 26,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        CurrencyFormatter.formatINR(summary.totalProjectedFireCorpus),
-                        style: const TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          const Divider(color: Colors.white24, height: 1),
-          const SizedBox(height: 12),
-
-          // Funding Progress & Quick Stats
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    '30x Target Funded: ${summary.fundingPercentage30x.toStringAsFixed(1)}%',
-                    style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    'Surplus (30x): ${summary.surplus30x >= 0 ? "+" : ""}${CurrencyFormatter.formatCompactINR(summary.surplus30x)}',
-                    style: TextStyle(
-                      color: summary.surplus30x >= 0 ? const Color(0xFF6EE7B7) : const Color(0xFFFCA5A5),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: LinearProgressIndicator(
-              value: min(1.0, summary.fundingPercentage30x / 100.0),
-              backgroundColor: Colors.white24,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                summary.isFireReady ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
-              ),
-              minHeight: 8,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHorizonChips(double currentYears) {
-    final horizons = [1.0, 3.0, 5.0, 6.0, 7.0, 10.0, 15.0];
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          const Text(
-            'Target Horizon: ',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.textMuted),
-          ),
-          const SizedBox(width: 6),
-          ...horizons.map((yr) {
-            final isSelected = (currentYears - yr).abs() < 0.1;
-            return Padding(
-              padding: const EdgeInsets.only(right: 6),
-              child: FilterChip(
-                label: Text('${yr.toInt()} Yrs'),
-                selected: isSelected,
-                selectedColor: AppTheme.primaryNavy.withOpacity(0.15),
-                checkmarkColor: AppTheme.primaryNavy,
-                labelStyle: TextStyle(
-                  fontSize: 11,
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                  color: isSelected ? AppTheme.primaryNavy : AppTheme.textDark,
-                ),
-                onSelected: (_) {
-                  widget.controller.updateField(targetYears: yr);
-                },
-              ),
-            );
-          }),
-        ],
-      ),
     );
   }
 
@@ -1039,7 +989,103 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _buildDebtHoldingTile(DebtHolding holding) {
+    String formatDate(DateTime? d) {
+      if (d == null) return 'N/A';
+      return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1).withOpacity(0.12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.receipt_long_rounded, color: Color(0xFF6366F1), size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        holding.name,
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF6366F1).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        holding.category,
+                        style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Color(0xFF6366F1)),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '${formatDate(holding.startDate)} → ${formatDate(holding.endDate)} (${holding.tenureYears.toStringAsFixed(1)} Yrs) • ${(holding.returnRate * 100).toStringAsFixed(2)}% p.a.',
+                  style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                CurrencyFormatter.formatINR(holding.value),
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Color(0xFF6366F1)),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  InkWell(
+                    onTap: () => _showAddDebtHoldingDialog(context, holding),
+                    child: const Padding(
+                      padding: EdgeInsets.all(4.0),
+                      child: Icon(Icons.edit_outlined, size: 16, color: Colors.blueGrey),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => widget.controller.removeDebtHolding(holding.id),
+                    child: const Padding(
+                      padding: EdgeInsets.all(4.0),
+                      child: Icon(Icons.delete_outline_rounded, size: 16, color: Colors.red),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCashSection(CashAssets cash, bool isMobile) {
+    final holdingsCount = cash.holdings.length;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -1066,7 +1112,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
                       ),
                       Text(
-                        'Cash in hand, bank savings & fixed deposits',
+                        'Cash in hand, bank savings, fixed deposits & debt funds',
                         style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
                       ),
                     ],
@@ -1080,6 +1126,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF6366F1)),
                   ),
                 ),
+                const SizedBox(width: 4),
+                IconButton(
+                  tooltip: 'Add FD / Debt Holding',
+                  icon: const Icon(Icons.add_circle_outline_rounded, color: Color(0xFF6366F1)),
+                  onPressed: () => _showAddDebtHoldingDialog(context),
+                ),
               ],
             ),
             const SizedBox(height: 14),
@@ -1092,13 +1144,74 @@ class _DashboardScreenState extends State<DashboardScreen> {
               onChanged: (val) => widget.controller.updateCash(cashInHand: val),
             ),
             const SizedBox(height: 10),
+
             CurrencyInputField(
-              label: 'Fixed Deposits & Liquid Debt Funds',
-              guidance: 'Bank FDs & Treasury/Liquid funds (₹)',
+              label: 'Direct Fixed Deposits & Liquid Funds',
+              guidance: 'Quick entry for total FDs & liquid funds (₹)',
               initialValue: cash.fixedDeposits,
               type: InputType.currency,
               onChanged: (val) => widget.controller.updateCash(fixedDeposits: val),
             ),
+            const SizedBox(height: 14),
+
+            // Itemized Holdings Header & List
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'ITEMIZED FD & DEBT HOLDINGS',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppTheme.textDark),
+                    ),
+                    if (holdingsCount > 0) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6366F1).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '$holdingsCount',
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF6366F1)),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                TextButton.icon(
+                  onPressed: () => _showAddDebtHoldingDialog(context),
+                  icon: const Icon(Icons.add_rounded, size: 16),
+                  label: const Text('Add FD / Debt', style: TextStyle(fontSize: 12)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+
+            if (cash.holdings.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade200, style: BorderStyle.solid),
+                ),
+                child: Center(
+                  child: TextButton.icon(
+                    onPressed: () => _showAddDebtHoldingDialog(context),
+                    icon: const Icon(Icons.add_circle_outline_rounded, size: 16),
+                    label: const Text(
+                      'Add individual FD, debt fund, RD or bond with dates & return %',
+                      style: TextStyle(fontSize: 11),
+                    ),
+                  ),
+                ),
+              )
+            else
+              ...cash.holdings.map((h) => _buildDebtHoldingTile(h)),
           ],
         ),
       ),

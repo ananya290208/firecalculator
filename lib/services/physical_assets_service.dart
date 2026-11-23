@@ -77,8 +77,8 @@ class PhysicalAssetsService {
 
     // 3. Cash & Equivalents
     final double cashInHand = inputs.cash.cashInHand;
-    final double fixedDeposits = inputs.cash.fixedDeposits;
-    final double totalCashAndDeposits = cashInHand + fixedDeposits;
+    final double fixedDeposits = inputs.cash.effectiveFixedDeposits;
+    final double totalCashAndDeposits = inputs.cash.totalCashAndDeposits;
 
     final double projectedCashAtRetirement =
         inputs.cash.projectedCashAt(targetYears);
@@ -107,6 +107,7 @@ class PhysicalAssetsService {
       cashInHand: cashInHand,
       fixedDeposits: fixedDeposits,
       totalCashAndDeposits: totalCashAndDeposits,
+      holdings: inputs.cash.holdings,
       totalPhysicalAssets: totalPhysicalAssets,
       totalPhysicalLiabilities: totalPhysicalLiabilities,
       netPhysicalEquity: netPhysicalEquity,
