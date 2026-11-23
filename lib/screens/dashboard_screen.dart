@@ -517,11 +517,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // 1. Asset Allocation Breakdown Bar & Legend
-                          _buildAssetAllocationSection(summary, isMobile),
-                          const SizedBox(height: 20),
-
-                          // 4. Main Matrix: Left (Assets & Properties) + Right (FIRE Health & Liabilities)
+                          // Main Matrix: Left (Assets & Properties) + Right (FIRE Health & Liabilities)
                           if (isDesktop)
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -585,82 +581,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildAssetAllocationSection(ComprehensiveFireSummary summary, bool isMobile) {
-    if (summary.allocationSlices.isEmpty) return const SizedBox.shrink();
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Expanded(
-                  child: Text(
-                    'Asset Allocation & Portfolio Distribution',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    'Total: ${CurrencyFormatter.formatCrores(summary.totalGrossAssets / 10000000.0)}',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.textMuted),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: SizedBox(
-                height: 14,
-                child: Row(
-                  children: summary.allocationSlices.map((slice) {
-                    return Expanded(
-                      flex: max(1, (slice.percentage * 10).round()),
-                      child: Container(
-                        color: Color(slice.colorValue),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 14,
-              runSpacing: 8,
-              children: summary.allocationSlices.map((slice) {
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: Color(slice.colorValue),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${slice.label}: ${slice.percentage.toStringAsFixed(1)}% (${CurrencyFormatter.formatCompactINR(slice.amount)})',
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                );
-              }).toList(),
-            ),
-          ],
-        ),
-      ),
     );
   }
 

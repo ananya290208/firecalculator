@@ -5,7 +5,8 @@ import '../models/dashboard_models.dart';
 import '../utils/currency_formatter.dart';
 
 /// Fixed sticky top banner that displays the Comprehensive FIRE Dashboard metrics
-/// across all tabs and sections, updating in real time as the user edits any input field.
+/// along with the Asset Allocation & Portfolio Distribution section across all tabs,
+/// updating dynamically in real time as the user edits any input field.
 class PinnedDashboardHeader extends StatefulWidget {
   final FireCalculatorController controller;
 
@@ -48,6 +49,7 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
   }
 
   /// Desktop View (width >= 1024): Premium executive 3-column banner with instant horizon selector
+  /// and fixed Asset Allocation & Portfolio Distribution breakdown directly below it.
   Widget _buildDesktopBanner(ComprehensiveFireSummary summary) {
     return Container(
       width: double.infinity,
@@ -59,7 +61,7 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.25),
+            color: const Color(0xFF0F172A).withOpacity(0.28),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -126,7 +128,7 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
               ),
               const SizedBox(height: 10),
 
-              // Bottom Row: 3 Primary Metrics
+              // Middle Row: 3 Primary Metrics
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -202,6 +204,10 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
                   ),
                 ],
               ),
+              const SizedBox(height: 10),
+
+              // Bottom Section: Asset Allocation & Portfolio Distribution (Fixed below banner)
+              _buildAssetAllocationSection(summary, isMobile: false),
             ],
           ),
         ),
@@ -328,6 +334,10 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
               ),
             ],
           ),
+          const SizedBox(height: 8),
+
+          // Asset Allocation Fixed Section
+          _buildAssetAllocationSection(summary, isMobile: false, isTablet: true),
         ],
       ),
     );
@@ -468,7 +478,21 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
             ],
           ),
 
-          // If Expanded on Mobile: Show additional details
+          const SizedBox(height: 5),
+          // Slim 30x Progress Bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: LinearProgressIndicator(
+              value: min(1.0, summary.fundingPercentage30x / 100.0),
+              backgroundColor: Colors.white24,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                summary.isFireReady ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+              ),
+              minHeight: 4,
+            ),
+          ),
+
+          // If Expanded on Mobile: Show full allocation breakdown & numbers
           if (_isExpandedOnMobile) ...[
             const SizedBox(height: 8),
             const Divider(color: Colors.white24, height: 1),
@@ -481,26 +505,163 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
                   style: const TextStyle(color: Colors.white70, fontSize: 10),
                 ),
                 Text(
-                  'Total Net Worth: ${CurrencyFormatter.formatINR(summary.totalNetWorth)}',
+                  'Net Worth: ${CurrencyFormatter.formatINR(summary.totalNetWorth)}',
                   style: const TextStyle(color: Colors.white70, fontSize: 10),
                 ),
               ],
             ),
-          ],
-
-          const SizedBox(height: 5),
-          // Slim Progress Bar
-          ClipRRect(
-            borderRadius: BorderRadius.circular(3),
-            child: LinearProgressIndicator(
-              value: min(1.0, summary.fundingPercentage30x / 100.0),
-              backgroundColor: Colors.white24,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                summary.isFireReady ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+            const SizedBox(height: 6),
+            _buildAssetAllocationSection(summary, isMobile: true),
+          ] else if (summary.allocationSlices.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            // In compact mobile view: show live segmented allocation bar
+            ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: SizedBox(
+                height: 4,
+                child: Row(
+                  children: summary.allocationSlices.map((slice) {
+                    return Expanded(
+                      flex: max(1, (slice.percentage * 10).round()),
+                      child: Container(color: Color(slice.colorValue)),
+                    );
+                  }).toList(),
+                ),
               ),
-              minHeight: 4,
             ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Fixed Asset Allocation & Portfolio Distribution Section
+  Widget _buildAssetAllocationSection(
+    ComprehensiveFireSummary summary, {
+    required bool isMobile,
+    bool isTablet = false,
+  }) {
+    final hasSlices = summary.allocationSlices.isNotEmpty;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 8 : 12,
+        vertical: 7,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.20),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Header Row: Section Title + Gross Portfolio Value
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.pie_chart_outline_rounded, color: Color(0xFF2DD4BF), size: 13),
+                  const SizedBox(width: 6),
+                  Text(
+                    'ASSET ALLOCATION & PORTFOLIO DISTRIBUTION',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.85),
+                      fontSize: isMobile ? 9 : 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                'Gross: ${CurrencyFormatter.formatCrores(summary.totalGrossAssets / 10000000.0)}',
+                style: TextStyle(
+                  color: const Color(0xFF6EE7B7),
+                  fontSize: isMobile ? 9 : 11,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
           ),
+          const SizedBox(height: 6),
+
+          // Multi-color Segmented Allocation Bar
+          if (hasSlices)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: SizedBox(
+                height: isMobile ? 6 : 8,
+                child: Row(
+                  children: summary.allocationSlices.map((slice) {
+                    return Expanded(
+                      flex: max(1, (slice.percentage * 10).round()),
+                      child: Tooltip(
+                        message: '${slice.label}: ${slice.percentage.toStringAsFixed(1)}% (${CurrencyFormatter.formatCompactINR(slice.amount)})',
+                        child: Container(
+                          color: Color(slice.colorValue),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            )
+          else
+            Container(
+              height: isMobile ? 6 : 8,
+              decoration: BoxDecoration(
+                color: Colors.white12,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+
+          // Slices Legend Breakdown
+          if (hasSlices) ...[
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: isMobile ? 8 : 12,
+              runSpacing: 4,
+              children: summary.allocationSlices.map((slice) {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: Color(slice.colorValue),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${slice.label}: ${slice.percentage.toStringAsFixed(1)}% (${CurrencyFormatter.formatCompactINR(slice.amount)})',
+                      style: TextStyle(
+                        fontSize: isMobile ? 9 : 10,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white.withOpacity(0.85),
+                      ),
+                    ),
+                  ],
+                );
+              }).toList(),
+            ),
+          ] else ...[
+            const SizedBox(height: 4),
+            Text(
+              'Awaiting asset inputs (Equity MF, EPF, Real Estate, Gold, Cash & FDs)',
+              style: TextStyle(
+                fontSize: isMobile ? 8 : 9,
+                color: Colors.white38,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
         ],
       ),
     );
