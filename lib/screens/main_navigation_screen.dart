@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../controllers/fire_calculator_controller.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/exit_dialog.dart';
 import '../widgets/pinned_dashboard_header.dart';
 import 'calculator_screen.dart';
 import 'comparison_screen.dart';
@@ -231,6 +232,37 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                         label: Text('Saved Combinations ($historyCount)'),
                       ),
                     ],
+                    trailing: Expanded(
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: isDesktop
+                              ? TextButton.icon(
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.redAccent,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 8),
+                                  ),
+                                  icon: const Icon(
+                                      Icons.power_settings_new_rounded,
+                                      size: 18),
+                                  label: const Text('Exit App',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 13)),
+                                  onPressed: () => showExitDialog(context),
+                                )
+                              : IconButton(
+                                  icon: const Icon(
+                                      Icons.power_settings_new_rounded,
+                                      color: Colors.redAccent),
+                                  tooltip: 'Exit App',
+                                  onPressed: () => showExitDialog(context),
+                                ),
+                        ),
+                      ),
+                    ),
                   ),
                   const VerticalDivider(thickness: 1, width: 1, color: AppTheme.borderLight),
                   Expanded(
