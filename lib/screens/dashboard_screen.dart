@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import '../controllers/fire_calculator_controller.dart';
 import '../models/dashboard_models.dart';

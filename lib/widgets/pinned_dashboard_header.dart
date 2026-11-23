@@ -241,8 +241,11 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Top Row: Title + Horizon Pills + Badge
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
             children: [
               const Row(
                 mainAxisSize: MainAxisSize.min,
@@ -277,7 +280,7 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
             children: [
               Expanded(
                 child: _buildMetricTile(
-                  label: 'NET WORTH TODAY',
+                  label: 'TOTAL NET WORTH TODAY',
                   primaryValue: CurrencyFormatter.formatCrores(summary.totalNetWorth / 10000000.0),
                   secondaryValue: CurrencyFormatter.formatINR(summary.totalNetWorth),
                   color: Colors.white,
@@ -286,7 +289,7 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
               Container(width: 1, height: 36, color: Colors.white24, margin: const EdgeInsets.symmetric(horizontal: 10)),
               Expanded(
                 child: _buildMetricTile(
-                  label: 'PROJ. CORPUS (YR ${summary.targetYears.toInt()})',
+                  label: 'PROJECTED FIRE CORPUS (YR ${summary.targetYears.toInt()})',
                   primaryValue: CurrencyFormatter.formatCrores(summary.totalProjectedFireCorpus / 10000000.0),
                   secondaryValue: CurrencyFormatter.formatINR(summary.totalProjectedFireCorpus),
                   color: const Color(0xFF34D399),

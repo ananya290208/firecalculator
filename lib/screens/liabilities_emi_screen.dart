@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../controllers/fire_calculator_controller.dart';
 import '../models/liabilities_emi_models.dart';
+import '../models/physical_assets_models.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../widgets/currency_input_field.dart';
@@ -29,6 +30,7 @@ class _LiabilitiesEmiScreenState extends State<LiabilitiesEmiScreen> {
         final emiInputs = widget.controller.emiInputs;
         final emiResults = widget.controller.emiResults;
         final fireInputs = widget.controller.inputs;
+        final physicalInputs = widget.controller.physicalAssetsInputs;
 
         return Scaffold(
           appBar: AppBar(
@@ -79,7 +81,8 @@ class _LiabilitiesEmiScreenState extends State<LiabilitiesEmiScreen> {
                                       ),
                                       const SizedBox(height: 12),
                                       _buildEmiInputsCard(
-                                          emiInputs, fireInputs, isMobile: true),
+                                          emiInputs, fireInputs, physicalInputs,
+                                          isMobile: false),
                                       const SizedBox(height: 16),
                                       _buildSectionTitle(
                                         '2. SIP SQUEEZE SIMULATION',
@@ -160,7 +163,8 @@ class _LiabilitiesEmiScreenState extends State<LiabilitiesEmiScreen> {
                             AppTheme.primaryNavy,
                           ),
                           const SizedBox(height: 12),
-                          _buildEmiInputsCard(emiInputs, fireInputs,
+                          _buildEmiInputsCard(
+                              emiInputs, fireInputs, physicalInputs,
                               isMobile: isMobile),
                           const SizedBox(height: 16),
 
@@ -427,14 +431,37 @@ class _LiabilitiesEmiScreenState extends State<LiabilitiesEmiScreen> {
     );
   }
 
-  Widget _buildEmiInputsCard(
-      LiabilitiesEmiInputs inputs, dynamic fireInputs, {required bool isMobile}) {
+  Widget _buildEmiInputsCard(LiabilitiesEmiInputs inputs, dynamic fireInputs,
+      PhysicalAssetsInputs physicalInputs,
+      {required bool isMobile}) {
+    final homeWithLoanList = physicalInputs.apartments
+        .where((a) =>
+            a.hasMortgage ||
+            a.monthlyEmi > 0 ||
+            a.mortgageBalance > 0 ||
+            a.isSelfOccupied)
+        .toList();
+    final ApartmentProperty? primaryHome =
+        homeWithLoanList.isNotEmpty ? homeWithLoanList.first : null;
+    final double minRequiredHomeLoanEmi = primaryHome != null &&
+            (primaryHome.hasMortgage || primaryHome.monthlyEmi > 0)
+        ? primaryHome.monthlyEmi
+        : 0.0;
+    final bool isEmiLesserThanHomeLoan = minRequiredHomeLoanEmi > 0 &&
+        (inputs.totalMonthlyEmi < minRequiredHomeLoanEmi ||
+            (_showItemizedEmis && inputs.homeLoanEmi < minRequiredHomeLoanEmi));
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Home Asset & Mortgage Integration Section
+            _buildHomeAssetSection(
+                context, physicalInputs, inputs, primaryHome),
+            const SizedBox(height: 12),
+
             // Mode switch: Consolidated Total vs Itemized EMIs
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -563,6 +590,77 @@ class _LiabilitiesEmiScreenState extends State<LiabilitiesEmiScreen> {
               ),
             ],
 
+            // Warning Alert if entered EMI is lesser than the linked Home Loan EMI
+            if (isEmiLesserThanHomeLoan) ...[
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF2F2),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFFCA5A5)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.warning_amber_rounded,
+                      color: Color(0xFFDC2626),
+                      size: 22,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Warning: Entered EMI is less than Home Loan EMI!',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF991B1B),
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'Your linked Home Property has a mandatory monthly loan EMI of ₹${CurrencyFormatter.formatINR(minRequiredHomeLoanEmi)}. You entered ₹${CurrencyFormatter.formatINR(inputs.totalMonthlyEmi)}/mo. Total EMI should be at least ₹${CurrencyFormatter.formatINR(minRequiredHomeLoanEmi)}.',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFFB91C1C),
+                              height: 1.3,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFDC2626),
+                              foregroundColor: Colors.white,
+                              visualDensity: VisualDensity.compact,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              textStyle: const TextStyle(
+                                  fontSize: 11, fontWeight: FontWeight.w700),
+                            ),
+                            icon: const Icon(Icons.check_circle_outline,
+                                size: 14),
+                            label: Text(
+                              'Auto-Fix: Set EMI to ₹${CurrencyFormatter.formatCompactINR(minRequiredHomeLoanEmi)}',
+                            ),
+                            onPressed: () {
+                              widget.controller.updateEmiField(
+                                homeLoanEmi: minRequiredHomeLoanEmi,
+                                customTotalMonthlyEmi: minRequiredHomeLoanEmi,
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             const SizedBox(height: 14),
 
             // Remaining EMI Tenure Stepper & Slider
@@ -661,6 +759,434 @@ class _LiabilitiesEmiScreenState extends State<LiabilitiesEmiScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildHomeAssetSection(
+    BuildContext context,
+    PhysicalAssetsInputs physicalInputs,
+    LiabilitiesEmiInputs emiInputs,
+    ApartmentProperty? primaryHome,
+  ) {
+    if (primaryHome != null &&
+        (primaryHome.hasMortgage ||
+            primaryHome.monthlyEmi > 0 ||
+            primaryHome.marketValue > 0)) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 4),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0FDF4),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFBBF7D0)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryNavy.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.home_outlined,
+                            size: 18, color: AppTheme.primaryNavy),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              primaryHome.name.isNotEmpty
+                                  ? primaryHome.name
+                                  : 'Primary Residence',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.primaryNavy,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              primaryHome.hasMortgage
+                                  ? 'Linked Home Loan & Auto-Populated'
+                                  : 'Primary Home (No Active Mortgage)',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: AppTheme.textMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined, size: 16),
+                      tooltip: 'Edit Home Asset & Loan',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () =>
+                          _showAddHomeAssetDialog(context, primaryHome),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline_rounded,
+                          size: 16, color: Colors.redAccent),
+                      tooltip: 'Remove Home Loan',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () {
+                        widget.controller.removeHomeAssetLoan(primaryHome.id);
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Divider(height: 1, color: Color(0xFFDCFCE7)),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildMiniAssetMetric(
+                    'Market Value',
+                    CurrencyFormatter.formatINR(primaryHome.marketValue),
+                  ),
+                ),
+                Expanded(
+                  child: _buildMiniAssetMetric(
+                    'Mortgage Balance',
+                    CurrencyFormatter.formatINR(primaryHome.mortgageBalance),
+                    valueColor: Colors.deepOrange,
+                  ),
+                ),
+                Expanded(
+                  child: _buildMiniAssetMetric(
+                    'Home Loan EMI',
+                    '₹${CurrencyFormatter.formatCompactINR(primaryHome.monthlyEmi)}/mo',
+                    valueColor: AppTheme.primaryNavy,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Unlinked placeholder banner
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE0E7FF),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.add_home_work_outlined,
+                size: 18, color: Color(0xFF4338CA)),
+          ),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Have a Home Property with Loan?',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1E293B),
+                  ),
+                ),
+                SizedBox(height: 1),
+                Text(
+                  'Enter home market value & loan to auto-populate EMI.',
+                  style: TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+                ),
+              ],
+            ),
+          ),
+          TextButton.icon(
+            style: TextButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              backgroundColor: const Color(0xFFEEF2FF),
+              foregroundColor: const Color(0xFF4338CA),
+            ),
+            icon: const Icon(Icons.add_rounded, size: 16),
+            label: const Text(
+              'Add Home Loan',
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+            ),
+            onPressed: () => _showAddHomeAssetDialog(context, null),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniAssetMetric(String label, String value,
+      {Color? valueColor}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+              fontSize: 9,
+              color: Color(0xFF64748B),
+              fontWeight: FontWeight.w600),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 2),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: valueColor ?? const Color(0xFF0F172A),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showAddHomeAssetDialog(
+      BuildContext context, ApartmentProperty? existing) {
+    final nameController = TextEditingController(
+      text: existing?.name ?? 'Primary Residence',
+    );
+    final marketValueController = TextEditingController(
+      text: existing != null && existing.marketValue > 0
+          ? existing.marketValue.toStringAsFixed(0)
+          : '10000000',
+    );
+    final loanBalanceController = TextEditingController(
+      text: existing != null && existing.mortgageBalance > 0
+          ? existing.mortgageBalance.toStringAsFixed(0)
+          : '4500000',
+    );
+    final emiController = TextEditingController(
+      text: existing != null && existing.monthlyEmi > 0
+          ? existing.monthlyEmi.toStringAsFixed(0)
+          : '40000',
+    );
+    final tenureController = TextEditingController(
+      text: existing != null && existing.remainingEmiMonths > 0
+          ? existing.remainingEmiMonths.toString()
+          : '180',
+    );
+    final rateController = TextEditingController(
+      text: existing != null && existing.loanInterestRate > 0
+          ? (existing.loanInterestRate * 100).toStringAsFixed(2)
+          : '8.50',
+    );
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryNavy.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.home_work_outlined,
+                    color: AppTheme.primaryNavy, size: 20),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  existing == null
+                      ? 'Link Home Property & Loan'
+                      : 'Edit Home Property & Loan',
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w800),
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: SizedBox(
+              width: 420,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Values entered here will auto-populate your monthly EMI, outstanding debt liability, and link property equity to Net Worth.',
+                    style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Property Name / Identifier',
+                      hintText: 'e.g. Primary Residence / 3BHK Flat',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: marketValueController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Current Market Value (₹)',
+                      hintText: 'e.g. 10000000 for 1 Cr',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                      prefixText: '₹ ',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: loanBalanceController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Outstanding Loan Principal (₹)',
+                      hintText: 'e.g. 4500000 for 45 Lakhs',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                      prefixText: '₹ ',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: emiController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Monthly Home Loan EMI (₹)',
+                      hintText: 'e.g. 40000',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                      prefixText: '₹ ',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: tenureController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Tenure (Months)',
+                            hintText: 'e.g. 180',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                            suffixText: 'Mo',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          controller: rateController,
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
+                          decoration: const InputDecoration(
+                            labelText: 'Interest Rate',
+                            hintText: 'e.g. 8.5',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                            suffixText: '%',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryNavy,
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              ),
+              icon: const Icon(Icons.check, size: 16),
+              label: const Text('Save & Auto-Populate EMI'),
+              onPressed: () {
+                final marketVal = double.tryParse(marketValueController.text
+                        .replaceAll(RegExp(r'[^0-9.]'), '')) ??
+                    0.0;
+                final loanBal = double.tryParse(loanBalanceController.text
+                        .replaceAll(RegExp(r'[^0-9.]'), '')) ??
+                    0.0;
+                final monthlyEmi = double.tryParse(
+                        emiController.text.replaceAll(RegExp(r'[^0-9.]'), '')) ??
+                    0.0;
+                final tenure = int.tryParse(tenureController.text
+                        .replaceAll(RegExp(r'[^0-9]'), '')) ??
+                    0;
+                final rate = (double.tryParse(rateController.text
+                            .replaceAll(RegExp(r'[^0-9.]'), '')) ??
+                        8.5) /
+                    100.0;
+
+                widget.controller.setHomeAssetWithLoan(
+                  id: existing?.id,
+                  name: nameController.text.trim().isEmpty
+                      ? 'Primary Residence'
+                      : nameController.text.trim(),
+                  marketValue: marketVal,
+                  loanBalance: loanBal,
+                  monthlyEmi: monthlyEmi,
+                  remainingMonths: tenure,
+                  loanInterestRate: rate,
+                );
+
+                Navigator.of(ctx).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Home Asset and Loan EMI auto-populated successfully!',
+                    ),
+                    duration: Duration(seconds: 3),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 

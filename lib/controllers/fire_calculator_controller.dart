@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import '../models/dashboard_models.dart';
 import '../models/fire_inputs.dart';
@@ -173,6 +174,60 @@ class FireCalculatorController extends ChangeNotifier {
   void removeApartment(String id) {
     final list = _physicalAssetsInputs.apartments.where((a) => a.id != id).toList();
     updatePhysicalAssets(_physicalAssetsInputs.copyWith(apartments: list));
+  }
+
+  void setHomeAssetWithLoan({
+    String? id,
+    required String name,
+    required double marketValue,
+    required double loanBalance,
+    required double monthlyEmi,
+    required int remainingMonths,
+    double loanInterestRate = 0.085,
+  }) {
+    // 1. Find existing self-occupied/primary home apartment or create one
+    final apartments = List<ApartmentProperty>.from(_physicalAssetsInputs.apartments);
+    final idx = apartments.indexWhere((a) => (id != null && a.id == id) || a.isSelfOccupied || a.id == 'primary_home');
+    final home = ApartmentProperty(
+      id: idx >= 0 ? apartments[idx].id : (id ?? 'primary_home'),
+      name: name.trim().isEmpty ? 'Primary Residence' : name.trim(),
+      marketValue: marketValue,
+      hasMortgage: loanBalance > 0 || monthlyEmi > 0,
+      mortgageBalance: loanBalance,
+      monthlyEmi: monthlyEmi,
+      remainingEmiMonths: remainingMonths,
+      loanInterestRate: loanInterestRate > 0 ? loanInterestRate : 0.085,
+      isSelfOccupied: true,
+      monetizeAtRetirement: false,
+    );
+
+    if (idx >= 0) {
+      apartments[idx] = home;
+    } else {
+      apartments.insert(0, home);
+    }
+    updatePhysicalAssets(_physicalAssetsInputs.copyWith(apartments: apartments));
+
+    // 2. Auto-populate into the EMI inputs
+    final currentTotal = _emiInputs.customTotalMonthlyEmi ?? _emiInputs.totalMonthlyEmi;
+    final newTotal = max(currentTotal, monthlyEmi);
+    updateEmiField(
+      homeLoanEmi: monthlyEmi,
+      loanInterestRate: loanInterestRate > 0 ? loanInterestRate : _emiInputs.loanInterestRate,
+      outstandingLoanPrincipal: loanBalance > 0 ? loanBalance : _emiInputs.outstandingLoanPrincipal,
+      remainingEmiMonths: remainingMonths > 0 ? remainingMonths : _emiInputs.remainingEmiMonths,
+      customTotalMonthlyEmi: newTotal > 0 ? newTotal : null,
+      clearCustomTotal: newTotal == 0,
+    );
+  }
+
+  void removeHomeAssetLoan(String id) {
+    final apartments = _physicalAssetsInputs.apartments.where((a) => a.id != id).toList();
+    updatePhysicalAssets(_physicalAssetsInputs.copyWith(apartments: apartments));
+    updateEmiField(
+      homeLoanEmi: 0.0,
+      clearCustomTotal: true,
+    );
   }
 
   void addLand(LandProperty land) {

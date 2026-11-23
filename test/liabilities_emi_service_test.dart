@@ -1,11 +1,14 @@
 import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fire_calculator/controllers/fire_calculator_controller.dart';
 import 'package:fire_calculator/models/fire_inputs.dart';
 import 'package:fire_calculator/models/liabilities_emi_models.dart';
 import 'package:fire_calculator/services/fire_calculator_service.dart';
+import 'package:fire_calculator/services/history_service.dart';
 import 'package:fire_calculator/services/liabilities_emi_service.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('LiabilitiesEmiService Tests', () {
     const defaultFireInputs = FireInputs(
       targetYears: 3.0,
@@ -151,6 +154,50 @@ void main() {
       // Zero tenure
       final zeroTenure = emiInputs.copyWith(remainingEmiMonths: 0);
       expect(zeroTenure.tenureFormatted, '0 Months (No Debt)');
+    });
+
+    test('5. Home asset with loan auto-populates EMI and detects shortfall', () {
+      final controller = FireCalculatorController(historyService: HistoryService());
+
+      // Auto-populate Home Asset with Loan
+      controller.setHomeAssetWithLoan(
+        name: 'My 3BHK Home',
+        marketValue: 12000000.0,
+        loanBalance: 5000000.0,
+        monthlyEmi: 45000.0,
+        remainingMonths: 180,
+        loanInterestRate: 0.085,
+      );
+
+      // Verify physical asset was added
+      expect(controller.physicalAssetsInputs.apartments.length, 1);
+      final home = controller.physicalAssetsInputs.apartments.first;
+      expect(home.name, 'My 3BHK Home');
+      expect(home.marketValue, 12000000.0);
+      expect(home.mortgageBalance, 5000000.0);
+      expect(home.monthlyEmi, 45000.0);
+      expect(home.remainingEmiMonths, 180);
+      expect(home.hasMortgage, true);
+
+      // Verify EMI inputs were auto-populated
+      expect(controller.emiInputs.homeLoanEmi, 45000.0);
+      expect(controller.emiInputs.totalMonthlyEmi, 45000.0);
+      expect(controller.emiInputs.outstandingLoanPrincipal, 5000000.0);
+      expect(controller.emiInputs.remainingEmiMonths, 180);
+
+      // Verify shortfall detection logic:
+      // User enters an EMI lesser than the home loan EMI (e.g. 30,000 < 45,000)
+      controller.updateEmiField(customTotalMonthlyEmi: 30000.0);
+      expect(controller.emiInputs.totalMonthlyEmi < home.monthlyEmi, isTrue);
+
+      // User fixes it (auto-fix sets it back to 45,000)
+      controller.updateEmiField(customTotalMonthlyEmi: home.monthlyEmi);
+      expect(controller.emiInputs.totalMonthlyEmi >= home.monthlyEmi, isTrue);
+
+      // Remove home asset loan
+      controller.removeHomeAssetLoan(home.id);
+      expect(controller.physicalAssetsInputs.apartments.isEmpty, isTrue);
+      expect(controller.emiInputs.homeLoanEmi, 0.0);
     });
   });
 }
