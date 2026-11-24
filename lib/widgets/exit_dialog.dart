@@ -105,6 +105,11 @@ class ExitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Hide exit button completely on web platforms (browser tabs should not have exit buttons)
+    if (kIsWeb) {
+      return const SizedBox.shrink();
+    }
+
     return IconButton(
       tooltip: 'Exit App',
       visualDensity: VisualDensity.compact,

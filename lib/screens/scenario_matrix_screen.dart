@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../controllers/fire_calculator_controller.dart';
 import '../models/scenario_item.dart';
@@ -29,9 +30,11 @@ class ScenarioMatrixScreen extends StatelessWidget {
               'Scenario Matrix',
               style: TextStyle(fontWeight: FontWeight.w800),
             ),
-            actions: const [
-              ExitButton(),
-              SizedBox(width: 8),
+            actions: [
+              if (!kIsWeb) ...[
+                const ExitButton(),
+                const SizedBox(width: 8),
+              ],
             ],
           ),
           body: SafeArea(

@@ -104,9 +104,11 @@ class _AuthScreenState extends State<AuthScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        actions: const [
-          ExitButton(),
-          SizedBox(width: 8),
+        actions: [
+          if (!kIsWeb) ...[
+            const ExitButton(),
+            const SizedBox(width: 8),
+          ],
         ],
       ),
       body: SafeArea(

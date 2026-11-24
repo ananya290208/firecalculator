@@ -5,6 +5,7 @@ import 'package:fire_calculator/controllers/fire_calculator_controller.dart';
 import 'package:fire_calculator/main.dart';
 import 'package:fire_calculator/models/physical_assets_models.dart';
 import 'package:fire_calculator/services/history_service.dart';
+import 'package:fire_calculator/widgets/exit_dialog.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -161,5 +162,29 @@ void main() {
     expect(find.text('1-CLICK PRESET GOALS'), findsOneWidget);
     expect(find.text('How Sinking Fund SIP Works'), findsOneWidget);
     expect(find.text('Total Capital Outlay'), findsOneWidget);
+  });
+
+  testWidgets('ExitButton renders on desktop/mobile and launches confirmation dialog', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: ExitButton(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final exitButtonFinder = find.byType(ExitButton);
+    expect(exitButtonFinder, findsOneWidget);
+    expect(find.byIcon(Icons.power_settings_new_rounded), findsOneWidget);
+
+    // Tap exit button
+    await tester.tap(exitButtonFinder);
+    await tester.pumpAndSettle();
+
+    // Verify confirmation dialog appears
+    expect(find.text('Exit Application'), findsOneWidget);
+    expect(find.text('Cancel'), findsOneWidget);
+    expect(find.text('Exit'), findsOneWidget);
   });
 }

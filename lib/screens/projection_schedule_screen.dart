@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../controllers/fire_calculator_controller.dart';
 import '../theme/app_theme.dart';
@@ -37,9 +38,11 @@ class _ProjectionScheduleScreenState extends State<ProjectionScheduleScreen> {
               'Schedule & Chart',
               style: TextStyle(fontWeight: FontWeight.w800),
             ),
-            actions: const [
-              ExitButton(),
-              SizedBox(width: 8),
+            actions: [
+              if (!kIsWeb) ...[
+                const ExitButton(),
+                const SizedBox(width: 8),
+              ],
             ],
           ),
           body: SafeArea(

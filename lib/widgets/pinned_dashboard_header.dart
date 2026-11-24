@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../controllers/fire_calculator_controller.dart';
 import '../models/dashboard_models.dart';
@@ -123,8 +124,10 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
                       _buildHorizonChips(summary.targetYears),
                       const SizedBox(width: 14),
                       _buildReadinessBadge(summary),
-                      const SizedBox(width: 8),
-                      const ExitButton(color: Colors.white70, size: 18),
+                      if (!kIsWeb) ...[
+                        const SizedBox(width: 8),
+                        const ExitButton(color: Colors.white70, size: 18),
+                      ],
                     ],
                   ),
                 ],
@@ -283,8 +286,10 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
                   _buildHorizonChips(summary.targetYears),
                   const SizedBox(width: 8),
                   _buildReadinessBadge(summary),
-                  const SizedBox(width: 6),
-                  const ExitButton(color: Colors.white70, size: 16),
+                  if (!kIsWeb) ...[
+                    const SizedBox(width: 6),
+                    const ExitButton(color: Colors.white70, size: 16),
+                  ],
                 ],
               ),
             ],

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../controllers/fire_calculator_controller.dart';
 import '../models/dashboard_models.dart';
@@ -147,8 +148,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                     ),
                 ],
               ),
-              const ExitButton(),
-              const SizedBox(width: 4),
+              if (!kIsWeb) ...[
+                const ExitButton(),
+                const SizedBox(width: 4),
+              ],
             ],
           ),
           body: SafeArea(

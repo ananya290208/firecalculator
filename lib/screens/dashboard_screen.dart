@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../controllers/fire_calculator_controller.dart';
 import '../models/dashboard_models.dart';
@@ -496,9 +497,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ],
             ),
-            actions: const [
-              ExitButton(),
-              SizedBox(width: 6),
+            actions: [
+              if (!kIsWeb) ...[
+                const ExitButton(),
+                const SizedBox(width: 6),
+              ],
             ],
           ),
           body: SafeArea(

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../controllers/fire_calculator_controller.dart';
 import '../models/debt_bucket_models.dart';
@@ -56,9 +57,11 @@ class _DebtBucketScreenState extends State<DebtBucketScreen> {
           'SIP Debt / Arbitrage Bucket Shift',
           style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
         ),
-        actions: const [
-          ExitButton(),
-          SizedBox(width: 8),
+        actions: [
+          if (!kIsWeb) ...[
+            const ExitButton(),
+            const SizedBox(width: 8),
+          ],
         ],
       ),
       body: SafeArea(

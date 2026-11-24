@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../controllers/fire_calculator_controller.dart';
 import '../models/saved_combination.dart';
@@ -39,8 +40,10 @@ class ComparisonScreen extends StatelessWidget {
                   icon: const Icon(Icons.delete_sweep_outlined),
                   onPressed: () => _confirmClearHistory(context, historyService),
                 ),
-              const ExitButton(),
-              const SizedBox(width: 8),
+              if (!kIsWeb) ...[
+                const ExitButton(),
+                const SizedBox(width: 8),
+              ],
             ],
           ),
           body: SafeArea(
