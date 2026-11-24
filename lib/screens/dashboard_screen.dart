@@ -7,6 +7,7 @@ import '../utils/currency_formatter.dart';
 import '../widgets/currency_input_field.dart';
 import '../widgets/exit_dialog.dart';
 import '../widgets/metric_badge.dart';
+import '../widgets/milestone_expenses_section.dart';
 import '../widgets/stat_card.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -543,6 +544,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     children: [
                                       _buildFireReadinessMatrix(summary, isMobile),
                                       const SizedBox(height: 16),
+                                      MilestoneExpensesSection(
+                                        controller: widget.controller,
+                                        summary: summary,
+                                        isMobile: isMobile,
+                                      ),
+                                      const SizedBox(height: 16),
                                       _buildLiabilitiesSummaryCard(summary, isMobile),
                                       const SizedBox(height: 16),
                                       _buildQuickJumpCards(),
@@ -556,6 +563,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 _buildFireReadinessMatrix(summary, isMobile),
+                                const SizedBox(height: 16),
+                                MilestoneExpensesSection(
+                                  controller: widget.controller,
+                                  summary: summary,
+                                  isMobile: isMobile,
+                                ),
                                 const SizedBox(height: 16),
                                 _buildRealEstateSection(physicalInputs, physicalResults, isMobile),
                                 const SizedBox(height: 16),

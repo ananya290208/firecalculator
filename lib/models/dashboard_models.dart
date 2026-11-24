@@ -1,3 +1,5 @@
+import 'milestone_expense_models.dart';
+
 class AssetAllocationSlice {
   final String label;
   final double amount;
@@ -43,6 +45,14 @@ class ComprehensiveFireSummary {
   final double adjustedFire25x;
   final double adjustedFire30x;
 
+  // 4b. Milestone Expense Goals (Child education, marriage, large capital goals)
+  final double totalMilestoneExpenses;
+  final double preRetirementMilestones;
+  final double postRetirementMilestones;
+  final int milestoneGoalsCount;
+  final List<MilestoneExpenseGoal> milestoneGoals;
+  final double milestoneMonthlySipNeeded;
+
   // 5. Surplus / Shortfall
   final double surplus25x;
   final double surplus30x;
@@ -76,6 +86,12 @@ class ComprehensiveFireSummary {
     required this.lifestyleFire30x,
     required this.adjustedFire25x,
     required this.adjustedFire30x,
+    this.totalMilestoneExpenses = 0.0,
+    this.preRetirementMilestones = 0.0,
+    this.postRetirementMilestones = 0.0,
+    this.milestoneGoalsCount = 0,
+    this.milestoneGoals = const [],
+    this.milestoneMonthlySipNeeded = 0.0,
     required this.surplus25x,
     required this.surplus30x,
     required this.fundingPercentage25x,
@@ -87,4 +103,5 @@ class ComprehensiveFireSummary {
   bool get isFireReady => surplus30x >= 0;
   bool get hasRentalIncome => annualRentalIncome > 0;
   bool get hasDebtOverhang => postRetirementEmiPv > 0;
+  bool get hasMilestoneGoals => totalMilestoneExpenses > 0;
 }

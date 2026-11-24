@@ -3,6 +3,7 @@ import '../models/dashboard_models.dart';
 import '../models/fire_inputs.dart';
 import '../models/fire_results.dart';
 import '../models/liabilities_emi_models.dart';
+import '../models/milestone_expense_models.dart';
 import '../models/physical_assets_models.dart';
 
 class DashboardService {
@@ -13,6 +14,7 @@ class DashboardService {
     required LiabilitiesEmiResults emiResults,
     required PhysicalAssetsInputs physicalInputs,
     required PhysicalAssetsResults physicalResults,
+    List<MilestoneExpenseGoal> milestoneGoals = const [],
   }) {
     // 1. Assets Today
     final double financialAssets = fireInputs.currentMFValue +
@@ -54,12 +56,20 @@ class DashboardService {
     final double netAnnualExpenseDrawdown =
         max(0.0, futureGrossAnnualExpenses - annualRentalIncome);
 
-    // 5. FIRE Targets (Offset by rental cashflow, increased by post-retirement debt PV)
+    // Milestone Expenses Summary
+    final milestoneSummary = MilestoneExpensesSummary.calculate(
+      goals: milestoneGoals,
+      retirementYears: targetYears,
+      expectedReturnRate: fireInputs.expectedMFReturn > 0 ? fireInputs.expectedMFReturn : 0.12,
+    );
+    final double totalMilestoneExpenses = milestoneSummary.totalTargetAmount;
+
+    // 5. FIRE Targets (Offset by rental cashflow, increased by post-retirement debt PV & milestone goals)
     final double postRetirementEmiPv = emiResults.postRetirementEmiPv;
     final double lifestyleFire25x = netAnnualExpenseDrawdown * 25.0;
     final double lifestyleFire30x = netAnnualExpenseDrawdown * 30.0;
-    final double adjustedFire25x = lifestyleFire25x + postRetirementEmiPv;
-    final double adjustedFire30x = lifestyleFire30x + postRetirementEmiPv;
+    final double adjustedFire25x = lifestyleFire25x + postRetirementEmiPv + totalMilestoneExpenses;
+    final double adjustedFire30x = lifestyleFire30x + postRetirementEmiPv + totalMilestoneExpenses;
 
     // 6. Surplus / Shortfall & Status
     final double surplus25x = totalProjectedFireCorpus - adjustedFire25x;
@@ -153,6 +163,12 @@ class DashboardService {
       lifestyleFire30x: lifestyleFire30x,
       adjustedFire25x: adjustedFire25x,
       adjustedFire30x: adjustedFire30x,
+      totalMilestoneExpenses: totalMilestoneExpenses,
+      preRetirementMilestones: milestoneSummary.preRetirementAmount,
+      postRetirementMilestones: milestoneSummary.postRetirementAmount,
+      milestoneGoalsCount: milestoneSummary.count,
+      milestoneGoals: milestoneGoals,
+      milestoneMonthlySipNeeded: milestoneSummary.totalMonthlySipNeeded,
       surplus25x: surplus25x,
       surplus30x: surplus30x,
       fundingPercentage25x: fundingPercentage25x,

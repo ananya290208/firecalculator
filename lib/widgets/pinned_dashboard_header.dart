@@ -202,6 +202,17 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
                             minHeight: 8,
                           ),
                         ),
+                        if (summary.hasMilestoneGoals) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            'Includes ₹${CurrencyFormatter.formatCompactINR(summary.totalMilestoneExpenses)} across ${summary.milestoneGoalsCount} Milestone Goals',
+                            style: const TextStyle(
+                              color: Color(0xFFF9A8D4),
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -337,6 +348,19 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
                         minHeight: 6,
                       ),
                     ),
+                    if (summary.hasMilestoneGoals) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        '+₹${CurrencyFormatter.formatCompactINR(summary.totalMilestoneExpenses)} Goals (${summary.milestoneGoalsCount})',
+                        style: const TextStyle(
+                          color: Color(0xFFF9A8D4),
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ],
                 ),
               ),

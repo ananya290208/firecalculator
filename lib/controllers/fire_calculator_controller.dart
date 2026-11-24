@@ -5,6 +5,7 @@ import '../models/dashboard_models.dart';
 import '../models/fire_inputs.dart';
 import '../models/fire_results.dart';
 import '../models/liabilities_emi_models.dart';
+import '../models/milestone_expense_models.dart';
 import '../models/physical_assets_models.dart';
 import '../models/scenario_item.dart';
 import '../services/dashboard_service.dart';
@@ -25,6 +26,10 @@ class FireCalculatorController extends ChangeNotifier {
 
   PhysicalAssetsInputs _physicalAssetsInputs = const PhysicalAssetsInputs();
   late PhysicalAssetsResults _physicalAssetsResults;
+
+  List<MilestoneExpenseGoal> _milestoneGoals = [];
+  late MilestoneExpensesSummary _milestoneSummary;
+
   late ComprehensiveFireSummary _dashboardSummary;
 
   Timer? _debounceTimer;
@@ -48,6 +53,10 @@ class FireCalculatorController extends ChangeNotifier {
 
   PhysicalAssetsInputs get physicalAssetsInputs => _physicalAssetsInputs;
   PhysicalAssetsResults get physicalAssetsResults => _physicalAssetsResults;
+
+  List<MilestoneExpenseGoal> get milestoneGoals => List.unmodifiable(_milestoneGoals);
+  MilestoneExpensesSummary get milestoneSummary => _milestoneSummary;
+
   ComprehensiveFireSummary get dashboardSummary => _dashboardSummary;
 
   void updateInputs(FireInputs newInputs, {bool autoSave = true}) {
@@ -277,10 +286,44 @@ class FireCalculatorController extends ChangeNotifier {
     updateInputs(updated, autoSave: autoSave);
   }
 
+  // Milestone Expense Goals Methods
+  void addMilestoneGoal(MilestoneExpenseGoal goal) {
+    _milestoneGoals = List<MilestoneExpenseGoal>.from(_milestoneGoals)..add(goal);
+    _recalculate();
+    notifyListeners();
+  }
+
+  void updateMilestoneGoal(MilestoneExpenseGoal updated) {
+    _milestoneGoals = _milestoneGoals.map((g) => g.id == updated.id ? updated : g).toList();
+    _recalculate();
+    notifyListeners();
+  }
+
+  void removeMilestoneGoal(String id) {
+    _milestoneGoals = _milestoneGoals.where((g) => g.id != id).toList();
+    _recalculate();
+    notifyListeners();
+  }
+
+  void setMilestoneGoals(List<MilestoneExpenseGoal> goals) {
+    _milestoneGoals = List<MilestoneExpenseGoal>.from(goals);
+    _recalculate();
+    notifyListeners();
+  }
+
+  void resetMilestoneGoals() {
+    _milestoneGoals = [];
+    _recalculate();
+    notifyListeners();
+  }
+
   void resetToBlank() {
     _physicalAssetsInputs = const PhysicalAssetsInputs();
     _emiInputs = const LiabilitiesEmiInputs();
-    updateInputs(const FireInputs(), autoSave: false);
+    _milestoneGoals = [];
+    _inputs = const FireInputs();
+    _recalculate();
+    notifyListeners();
   }
 
   void resetToExcelDefault() {
@@ -319,6 +362,12 @@ class FireCalculatorController extends ChangeNotifier {
       inputs: _physicalAssetsInputs,
       targetYears: _inputs.targetYears,
     );
+    _milestoneSummary = MilestoneExpensesSummary.calculate(
+      goals: _milestoneGoals,
+      retirementYears: _inputs.targetYears,
+      expectedReturnRate:
+          _inputs.expectedMFReturn > 0 ? _inputs.expectedMFReturn : 0.12,
+    );
     _dashboardSummary = DashboardService.calculate(
       fireInputs: _inputs,
       fireResults: _results,
@@ -326,6 +375,7 @@ class FireCalculatorController extends ChangeNotifier {
       emiResults: _emiResults,
       physicalInputs: _physicalAssetsInputs,
       physicalResults: _physicalAssetsResults,
+      milestoneGoals: _milestoneGoals,
     );
   }
 

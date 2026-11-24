@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fire_calculator/controllers/fire_calculator_controller.dart';
@@ -100,5 +101,37 @@ void main() {
     expect(find.text('REAL ESTATE & PROPERTIES'), findsOneWidget);
     expect(find.text('PRECIOUS METALS / GOLD ASSETS'), findsOneWidget);
     expect(find.text('CASH & LIQUID RESERVES'), findsOneWidget);
+  });
+
+  testWidgets('Major Milestone Expenses section allows adding and displays goals', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1280, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    SharedPreferences.setMockInitialValues({});
+    final historyService = HistoryService();
+    await historyService.loadHistory();
+    final controller = FireCalculatorController(historyService: historyService);
+
+    await tester.pumpWidget(FireCalculatorApp(controller: controller));
+    await tester.pumpAndSettle();
+
+    // Verify milestone section header is displayed
+    expect(find.text('MAJOR MILESTONE EXPENSES & LIFE GOALS'), findsOneWidget);
+
+    // Click on quick add preset: Child Education
+    final eduChip = find.text('🎓 Child Education (₹30L)');
+    expect(eduChip, findsOneWidget);
+    await tester.tap(eduChip);
+    await tester.pumpAndSettle();
+
+    // Verify goal has been added to controller and UI displays it
+    expect(controller.milestoneGoals.length, 1);
+    expect(controller.milestoneGoals.first.name, "Child's Higher Education");
+    expect(find.text("Child's Higher Education"), findsAtLeastNWidgets(1));
+    expect(find.text('Total Milestone Goals'), findsOneWidget);
   });
 }

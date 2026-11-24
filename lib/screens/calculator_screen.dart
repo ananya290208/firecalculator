@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../controllers/fire_calculator_controller.dart';
+import '../models/dashboard_models.dart';
 import '../models/fire_inputs.dart';
 import '../models/fire_results.dart';
 import '../models/liabilities_emi_models.dart';
@@ -9,6 +10,7 @@ import '../utils/currency_formatter.dart';
 import '../widgets/currency_input_field.dart';
 import '../widgets/exit_dialog.dart';
 import '../widgets/metric_badge.dart';
+import '../widgets/milestone_expenses_section.dart';
 import '../widgets/projection_chart.dart';
 import '../widgets/stat_card.dart';
 
@@ -71,6 +73,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         final results = widget.controller.results;
         final emiInputs = widget.controller.emiInputs;
         final emiResults = widget.controller.emiResults;
+        final summary = widget.controller.dashboardSummary;
 
         return Scaffold(
           appBar: AppBar(
@@ -184,6 +187,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                                       ),
                                       const SizedBox(height: 12),
                                       _buildInputsList(inputs, isMobile: true), // 1 per row in left 42% column
+                                      const SizedBox(height: 20),
+                                      MilestoneExpensesSection(
+                                        controller: widget.controller,
+                                        summary: summary,
+                                        isMobile: false,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -195,7 +204,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.stretch,
                                     children: [
-                                      _buildHeroCard(results, emiResults: emiResults, isMobile: false),
+                                      _buildHeroCard(results, emiResults: emiResults, summary: summary, isMobile: false),
                                       const SizedBox(height: 16),
                                       Card(
                                         child: Padding(
@@ -210,14 +219,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                                               const SizedBox(height: 12),
                                               ProjectionChart(
                                                 projections: results.yearlyProjections,
-                                                currentTarget25xCr: (emiResults.hasPostRetirementEmi
-                                                        ? emiResults.adjustedFire25x
-                                                        : results.fireTarget25x) /
-                                                    10000000.0,
-                                                currentTarget30xCr: (emiResults.hasPostRetirementEmi
-                                                        ? emiResults.adjustedFire30x
-                                                        : results.fireTarget30x) /
-                                                    10000000.0,
+                                                currentTarget25xCr: summary.adjustedFire25x / 10000000.0,
+                                                currentTarget30xCr: summary.adjustedFire30x / 10000000.0,
                                                 height: 260.0,
                                               ),
                                             ],
@@ -236,7 +239,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                                         color: AppTheme.primaryNavy,
                                       ),
                                       const SizedBox(height: 12),
-                                      _buildOutputsGrid(inputs, results, emiInputs: emiInputs, emiResults: emiResults, isMobile: false),
+                                      _buildOutputsGrid(inputs, results, emiInputs: emiInputs, emiResults: emiResults, summary: summary, isMobile: false),
                                     ],
                                   ),
                                 ),
@@ -271,7 +274,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                           const SizedBox(height: 16),
 
                           // ⭐️ TOTAL PROJECTED CORPUS Banner HIGHLIGHTED ON TOP OF SECTION 1
-                          _buildHeroCard(results, emiResults: emiResults, isMobile: isMobile),
+                          _buildHeroCard(results, emiResults: emiResults, summary: summary, isMobile: isMobile),
                           const SizedBox(height: 20),
 
                           // Section 1: Inputs & Assumptions
@@ -283,6 +286,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                           ),
                           const SizedBox(height: 12),
                           _buildInputsList(inputs, isMobile: isMobile),
+                          const SizedBox(height: 20),
+                          MilestoneExpensesSection(
+                            controller: widget.controller,
+                            summary: summary,
+                            isMobile: isMobile,
+                          ),
                           const SizedBox(height: 24),
 
                           // Liabilities & Debt Impact on FIRE (when filled)
@@ -299,7 +308,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                             color: AppTheme.primaryNavy,
                           ),
                           const SizedBox(height: 12),
-                          _buildOutputsGrid(inputs, results, emiInputs: emiInputs, emiResults: emiResults, isMobile: isMobile),
+                          _buildOutputsGrid(inputs, results, emiInputs: emiInputs, emiResults: emiResults, summary: summary, isMobile: isMobile),
 
                           const SizedBox(height: 40),
                         ],
@@ -414,10 +423,13 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   Widget _buildHeroCard(
     FireResults results, {
     required LiabilitiesEmiResults emiResults,
+    required ComprehensiveFireSummary summary,
     bool isMobile = false,
   }) {
     final bool hasOverhang = emiResults.hasPostRetirementEmi;
     final bool hasSqueeze = emiResults.isSipSqueezed;
+    final bool hasGoals = summary.hasMilestoneGoals;
+    final bool hasAdjustments = hasOverhang || hasGoals;
 
     return Container(
       decoration: BoxDecoration(
@@ -487,6 +499,27 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                     ),
                     const SizedBox(width: 6),
                   ],
+                  if (hasGoals) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDB2777).withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        '+${CurrencyFormatter.formatCompactINR(summary.totalMilestoneExpenses)} Goals',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                  ],
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
@@ -542,7 +575,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        hasOverhang ? '25x Adjusted Target' : '25x FIRE Rule (4.0% SWR)',
+                        hasAdjustments ? '25x Adjusted Target' : '25x FIRE Rule (4.0% SWR)',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(color: Colors.white70, fontSize: 10),
@@ -554,7 +587,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         CurrencyFormatter.formatCompactINR(
-                          hasOverhang ? emiResults.adjustedFire25x : results.fireTarget25x,
+                          hasAdjustments ? summary.adjustedFire25x : results.fireTarget25x,
                         ),
                         style: const TextStyle(
                           color: Colors.white,
@@ -563,21 +596,21 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                         ),
                       ),
                     ),
-                    if (hasOverhang) ...[
+                    if (hasAdjustments) ...[
                       const SizedBox(height: 1),
                       FittedBox(
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'Base ${CurrencyFormatter.formatCompactINR(results.fireTarget25x)} + Debt',
+                          'Base ${CurrencyFormatter.formatCompactINR(results.fireTarget25x)}${hasOverhang ? ' + Debt' : ''}${hasGoals ? ' + Goals' : ''}',
                           style: const TextStyle(color: Colors.white60, fontSize: 9),
                         ),
                       ),
                     ],
                     const SizedBox(height: 4),
                     MetricBadge(
-                      surplus: hasOverhang || hasSqueeze
-                          ? emiResults.surplus25xAdjusted
+                      surplus: hasAdjustments || hasSqueeze
+                          ? summary.surplus25x
                           : results.surplus25x,
                       compact: true,
                     ),
@@ -594,7 +627,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        hasOverhang ? '30x Adjusted Target' : '30x FIRE Rule (3.33% SWR)',
+                        hasAdjustments ? '30x Adjusted Target' : '30x FIRE Rule (3.33% SWR)',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(color: Colors.white70, fontSize: 10),
@@ -606,7 +639,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         CurrencyFormatter.formatCompactINR(
-                          hasOverhang ? emiResults.adjustedFire30x : results.fireTarget30x,
+                          hasAdjustments ? summary.adjustedFire30x : results.fireTarget30x,
                         ),
                         style: const TextStyle(
                           color: Colors.white,
@@ -615,21 +648,21 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                         ),
                       ),
                     ),
-                    if (hasOverhang) ...[
+                    if (hasAdjustments) ...[
                       const SizedBox(height: 1),
                       FittedBox(
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'Base ${CurrencyFormatter.formatCompactINR(results.fireTarget30x)} + Debt',
+                          'Base ${CurrencyFormatter.formatCompactINR(results.fireTarget30x)}${hasOverhang ? ' + Debt' : ''}${hasGoals ? ' + Goals' : ''}',
                           style: const TextStyle(color: Colors.white60, fontSize: 9),
                         ),
                       ),
                     ],
                     const SizedBox(height: 4),
                     MetricBadge(
-                      surplus: hasOverhang || hasSqueeze
-                          ? emiResults.surplus30xAdjusted
+                      surplus: hasAdjustments || hasSqueeze
+                          ? summary.surplus30x
                           : results.surplus30x,
                       compact: true,
                     ),
@@ -983,11 +1016,14 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     FireResults results, {
     required LiabilitiesEmiInputs emiInputs,
     required LiabilitiesEmiResults emiResults,
+    required ComprehensiveFireSummary summary,
     bool isMobile = false,
   }) {
     final bool hasOverhang = emiResults.hasPostRetirementEmi;
     final bool hasSqueeze = emiResults.isSipSqueezed;
     final bool hasLiabilities = _hasActiveLiabilities(emiInputs, emiResults);
+    final bool hasGoals = summary.hasMilestoneGoals;
+    final bool hasAdjustments = hasOverhang || hasGoals;
 
     final card1 = StatCard(
       title: 'Net Reinvested MF Principal',
@@ -1044,66 +1080,66 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       isHighlighted: true,
     );
     final card7 = StatCard(
-      title: hasOverhang
+      title: hasAdjustments
           ? '25x Adjusted FIRE Target'
           : '25x FIRE Target (4.0% SWR)',
       primaryValue: CurrencyFormatter.formatCompactINR(
-        hasOverhang ? emiResults.adjustedFire25x : results.fireTarget25x,
+        hasAdjustments ? summary.adjustedFire25x : results.fireTarget25x,
       ),
-      subtitle: hasOverhang
-          ? 'Lifestyle: ${CurrencyFormatter.formatCompactINR(results.fireTarget25x)} + Debt: ${CurrencyFormatter.formatCompactINR(emiResults.postRetirementEmiPv)}'
+      subtitle: hasAdjustments
+          ? 'Lifestyle: ${CurrencyFormatter.formatCompactINR(results.fireTarget25x)}${hasOverhang ? " + Debt: ${CurrencyFormatter.formatCompactINR(emiResults.postRetirementEmiPv)}" : ""}${hasGoals ? " + Goals: ${CurrencyFormatter.formatCompactINR(summary.totalMilestoneExpenses)}" : ""}'
           : CurrencyFormatter.formatINR(results.fireTarget25x),
-      note: hasOverhang
-          ? '= Lifestyle 25x + Post-Retirement EMI PV'
+      note: hasAdjustments
+          ? '= Lifestyle 25x${hasOverhang ? " + Post-Ret Debt PV" : ""}${hasGoals ? " + Milestone Goals" : ""}'
           : '= Annual Expense * 25',
       icon: Icons.flag_outlined,
       accentColor: AppTheme.blue25x,
     );
-    final double effSurplus25x = (hasOverhang || hasSqueeze)
-        ? emiResults.surplus25xAdjusted
+    final double effSurplus25x = (hasAdjustments || hasSqueeze)
+        ? summary.surplus25x
         : results.surplus25x;
     final card8 = StatCard(
-      title: hasOverhang
+      title: hasAdjustments
           ? 'Adjusted Surplus / (Shortfall) 25x'
           : 'Surplus / (Shortfall) 25x',
       primaryValue: CurrencyFormatter.formatCompactINR(effSurplus25x),
       subtitle: effSurplus25x >= 0
-          ? (hasOverhang ? 'Surplus Available (After Debt)' : 'Surplus Available')
-          : (hasOverhang ? 'Gap to Bridge (With Debt)' : 'Gap to Bridge'),
-      note: hasOverhang
+          ? (hasAdjustments ? 'Surplus Available (After Debt & Goals)' : 'Surplus Available')
+          : (hasAdjustments ? 'Gap to Bridge (With Debt & Goals)' : 'Gap to Bridge'),
+      note: hasAdjustments
           ? '= Available Corpus - Adjusted 25x Target'
           : '= Total Corpus - 25x Target',
       trailingBadge: MetricBadge(surplus: effSurplus25x, compact: true),
       accentColor: effSurplus25x >= 0 ? AppTheme.surplusGreen : AppTheme.shortfallRed,
     );
     final card9 = StatCard(
-      title: hasOverhang
+      title: hasAdjustments
           ? '30x Adjusted FIRE Target'
           : '30x FIRE Target (3.33% SWR)',
       primaryValue: CurrencyFormatter.formatCompactINR(
-        hasOverhang ? emiResults.adjustedFire30x : results.fireTarget30x,
+        hasAdjustments ? summary.adjustedFire30x : results.fireTarget30x,
       ),
-      subtitle: hasOverhang
-          ? 'Lifestyle: ${CurrencyFormatter.formatCompactINR(results.fireTarget30x)} + Debt: ${CurrencyFormatter.formatCompactINR(emiResults.postRetirementEmiPv)}'
+      subtitle: hasAdjustments
+          ? 'Lifestyle: ${CurrencyFormatter.formatCompactINR(results.fireTarget30x)}${hasOverhang ? " + Debt: ${CurrencyFormatter.formatCompactINR(emiResults.postRetirementEmiPv)}" : ""}${hasGoals ? " + Goals: ${CurrencyFormatter.formatCompactINR(summary.totalMilestoneExpenses)}" : ""}'
           : CurrencyFormatter.formatINR(results.fireTarget30x),
-      note: hasOverhang
-          ? '= Lifestyle 30x + Post-Retirement EMI PV'
+      note: hasAdjustments
+          ? '= Lifestyle 30x${hasOverhang ? " + Post-Ret Debt PV" : ""}${hasGoals ? " + Milestone Goals" : ""}'
           : '= Annual Expense * 30',
       icon: Icons.shield_moon_outlined,
       accentColor: AppTheme.purple30x,
     );
-    final double effSurplus30x = (hasOverhang || hasSqueeze)
-        ? emiResults.surplus30xAdjusted
+    final double effSurplus30x = (hasAdjustments || hasSqueeze)
+        ? summary.surplus30x
         : results.surplus30x;
     final card10 = StatCard(
-      title: hasOverhang
+      title: hasAdjustments
           ? 'Adjusted Surplus / (Shortfall) 30x'
           : 'Surplus / (Shortfall) 30x',
       primaryValue: CurrencyFormatter.formatCompactINR(effSurplus30x),
       subtitle: effSurplus30x >= 0
-          ? (hasOverhang ? 'Fully Covered (After Debt)' : 'Fully Covered')
-          : (hasOverhang ? 'Deficit to Fund (With Debt)' : 'Deficit to Fund'),
-      note: hasOverhang
+          ? (hasAdjustments ? 'Fully Covered (After Debt & Goals)' : 'Fully Covered')
+          : (hasAdjustments ? 'Deficit to Fund (With Debt & Goals)' : 'Deficit to Fund'),
+      note: hasAdjustments
           ? '= Available Corpus - Adjusted 30x Target'
           : '= Total Corpus - 30x Target',
       trailingBadge: MetricBadge(surplus: effSurplus30x, compact: true),
