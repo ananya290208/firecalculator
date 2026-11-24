@@ -14,6 +14,7 @@ class DashboardScreen extends StatefulWidget {
   final FireCalculatorController controller;
   final VoidCallback onNavigateToCalculator;
   final VoidCallback onNavigateToLiabilities;
+  final VoidCallback onNavigateToMilestones;
   final VoidCallback onNavigateToSwpSip;
   final VoidCallback onNavigateToDebtBucket;
   final VoidCallback onNavigateToSchedule;
@@ -23,6 +24,7 @@ class DashboardScreen extends StatefulWidget {
     required this.controller,
     required this.onNavigateToCalculator,
     required this.onNavigateToLiabilities,
+    required this.onNavigateToMilestones,
     required this.onNavigateToSwpSip,
     required this.onNavigateToDebtBucket,
     required this.onNavigateToSchedule,
@@ -548,6 +550,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         controller: widget.controller,
                                         summary: summary,
                                         isMobile: isMobile,
+                                        onManageInTab: widget.onNavigateToMilestones,
                                       ),
                                       const SizedBox(height: 16),
                                       _buildLiabilitiesSummaryCard(summary, isMobile),
@@ -568,6 +571,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   controller: widget.controller,
                                   summary: summary,
                                   isMobile: isMobile,
+                                  onManageInTab: widget.onNavigateToMilestones,
                                 ),
                                 const SizedBox(height: 16),
                                 _buildRealEstateSection(physicalInputs, physicalResults, isMobile),
@@ -1342,6 +1346,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   avatar: const Icon(Icons.account_balance_rounded, size: 16),
                   label: const Text('Liabilities & Loans'),
                   onPressed: widget.onNavigateToLiabilities,
+                ),
+                ActionChip(
+                  avatar: const Icon(Icons.celebration_rounded, size: 16, color: Color(0xFFDB2777)),
+                  label: const Text('Milestones & Life Events'),
+                  onPressed: widget.onNavigateToMilestones,
                 ),
                 ActionChip(
                   avatar: const Icon(Icons.swap_horiz_rounded, size: 16),

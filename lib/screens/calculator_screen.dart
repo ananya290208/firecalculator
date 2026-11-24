@@ -18,6 +18,7 @@ class CalculatorScreen extends StatefulWidget {
   final FireCalculatorController controller;
   final VoidCallback onNavigateToComparison;
   final VoidCallback? onNavigateToLiabilities;
+  final VoidCallback? onNavigateToMilestones;
   final AuthService? authService;
 
   const CalculatorScreen({
@@ -25,6 +26,7 @@ class CalculatorScreen extends StatefulWidget {
     required this.controller,
     required this.onNavigateToComparison,
     this.onNavigateToLiabilities,
+    this.onNavigateToMilestones,
     this.authService,
   });
 
@@ -187,12 +189,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                                       ),
                                       const SizedBox(height: 12),
                                       _buildInputsList(inputs, isMobile: true), // 1 per row in left 42% column
-                                      const SizedBox(height: 20),
-                                      MilestoneExpensesSection(
-                                        controller: widget.controller,
-                                        summary: summary,
-                                        isMobile: false,
-                                      ),
                                     ],
                                   ),
                                 ),
@@ -232,6 +228,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                                         _buildLiabilitiesFireImpactCard(emiInputs, emiResults, results, isMobile: false),
                                         const SizedBox(height: 18),
                                       ],
+                                      _buildMilestonesFireImpactCard(summary, isMobile: false),
+                                      const SizedBox(height: 18),
                                       _buildSectionHeader(
                                         title: '2. LIVE RETIREMENT READINESS OUTPUTS',
                                         subtitle: 'Calculated instantly from your assumptions',
@@ -287,18 +285,16 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                           const SizedBox(height: 12),
                           _buildInputsList(inputs, isMobile: isMobile),
                           const SizedBox(height: 20),
-                          MilestoneExpensesSection(
-                            controller: widget.controller,
-                            summary: summary,
-                            isMobile: isMobile,
-                          ),
-                          const SizedBox(height: 24),
 
                           // Liabilities & Debt Impact on FIRE (when filled)
                           if (_hasActiveLiabilities(emiInputs, emiResults)) ...[
                             _buildLiabilitiesFireImpactCard(emiInputs, emiResults, results, isMobile: isMobile),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 16),
                           ],
+
+                          // Milestones & Life Events Card
+                          _buildMilestonesFireImpactCard(summary, isMobile: isMobile),
+                          const SizedBox(height: 20),
 
                           // Section 2: Live Retirement Readiness Outputs
                           _buildSectionHeader(
@@ -900,6 +896,269 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 label: const Text(
                   'Edit Loan Details in Liabilities & EMI Section →',
                   style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMilestonesFireImpactCard(
+    ComprehensiveFireSummary summary, {
+    required bool isMobile,
+  }) {
+    final bool hasGoals = summary.hasMilestoneGoals;
+    final int count = summary.milestoneGoalsCount;
+    final double totalMilestones = summary.totalMilestoneExpenses;
+    final double monthlySip = summary.milestoneMonthlySipNeeded;
+    const Color accentColor = Color(0xFFDB2777); // Pink/Rose
+
+    if (!hasGoals) {
+      // Clean, compact prompt card inviting user to plan milestones
+      return Card(
+        elevation: 1,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: accentColor.withOpacity(0.25),
+            width: 1.2,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: accentColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.celebration_rounded,
+                  color: accentColor,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'MAJOR MILESTONE EXPENSES & LIFE EVENTS',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.3,
+                        color: AppTheme.primaryNavy,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Plan for child education, marriage & capital goals without depleting retirement funds',
+                      style: TextStyle(fontSize: 10.5, color: AppTheme.textMuted),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              FilledButton.tonalIcon(
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFFFDF2F8),
+                  foregroundColor: accentColor,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 11),
+                ),
+                onPressed: () => widget.onNavigateToMilestones?.call(),
+                icon: const Icon(Icons.arrow_forward_rounded, size: 14),
+                label: const Text('Milestones Tab'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Detailed Impact Card when goals are active
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: accentColor.withOpacity(0.35),
+          width: 1.5,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header Row: Icon, Title, Goals Count badge
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: accentColor.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.celebration_rounded,
+                    color: accentColor,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'MAJOR MILESTONE EXPENSES & LIFE EVENTS',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      Text(
+                        'Sinking-fund capital obligations added to your 25x/30x FIRE target',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppTheme.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFDF2F8),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFFBCFE8)),
+                  ),
+                  child: Text(
+                    '$count ${count == 1 ? "Goal" : "Goals"} Active',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: accentColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // Key Metrics Breakdown: 4 boxes
+            isMobile
+                ? Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildImpactItem(
+                              label: 'Total Milestone Outlay',
+                              value: CurrencyFormatter.formatCrores(totalMilestones / 10000000.0),
+                              subtitle: CurrencyFormatter.formatINR(totalMilestones),
+                              accentColor: accentColor,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _buildImpactItem(
+                              label: 'Required Monthly SIP',
+                              value: CurrencyFormatter.formatCompactINR(monthlySip),
+                              subtitle: 'Sinking fund (@ expected return)',
+                              accentColor: const Color(0xFF047857),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildImpactItem(
+                              label: '25x Adjusted Target',
+                              value: CurrencyFormatter.formatCrores(summary.adjustedFire25x / 10000000.0),
+                              subtitle: '+${CurrencyFormatter.formatCompactINR(totalMilestones)} from goals',
+                              accentColor: AppTheme.blue25x,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _buildImpactItem(
+                              label: '30x Adjusted Target',
+                              value: CurrencyFormatter.formatCrores(summary.adjustedFire30x / 10000000.0),
+                              subtitle: '+${CurrencyFormatter.formatCompactINR(totalMilestones)} from goals',
+                              accentColor: AppTheme.purple30x,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      Expanded(
+                        child: _buildImpactItem(
+                          label: 'Total Milestone Outlay',
+                          value: CurrencyFormatter.formatCrores(totalMilestones / 10000000.0),
+                          subtitle: CurrencyFormatter.formatINR(totalMilestones),
+                          accentColor: accentColor,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildImpactItem(
+                          label: 'Required Monthly SIP',
+                          value: CurrencyFormatter.formatCompactINR(monthlySip),
+                          subtitle: 'Sinking fund (@ expected return)',
+                          accentColor: const Color(0xFF047857),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildImpactItem(
+                          label: '25x Adjusted Target',
+                          value: CurrencyFormatter.formatCrores(summary.adjustedFire25x / 10000000.0),
+                          subtitle: '+${CurrencyFormatter.formatCompactINR(totalMilestones)} from goals',
+                          accentColor: AppTheme.blue25x,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildImpactItem(
+                          label: '30x Adjusted Target',
+                          value: CurrencyFormatter.formatCrores(summary.adjustedFire30x / 10000000.0),
+                          subtitle: '+${CurrencyFormatter.formatCompactINR(totalMilestones)} from goals',
+                          accentColor: AppTheme.purple30x,
+                        ),
+                      ),
+                    ],
+                  ),
+
+            const SizedBox(height: 12),
+            // Navigation link button to open the dedicated Milestones tab
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () => widget.onNavigateToMilestones?.call(),
+                icon: const Icon(Icons.arrow_forward_rounded, size: 16, color: accentColor),
+                label: const Text(
+                  'Manage Goals in Milestones & Life Events Tab →',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                    color: accentColor,
+                  ),
                 ),
               ),
             ),

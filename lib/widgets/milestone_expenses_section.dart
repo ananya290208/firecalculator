@@ -10,12 +10,14 @@ class MilestoneExpensesSection extends StatelessWidget {
   final FireCalculatorController controller;
   final ComprehensiveFireSummary summary;
   final bool isMobile;
+  final VoidCallback? onManageInTab;
 
   const MilestoneExpensesSection({
     super.key,
     required this.controller,
     required this.summary,
     this.isMobile = false,
+    this.onManageInTab,
   });
 
   Color _getCategoryColor(MilestoneCategory category) {
@@ -643,6 +645,22 @@ class MilestoneExpensesSection extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
+                if (onManageInTab != null) ...[
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      foregroundColor: const Color(0xFFDB2777),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    ),
+                    icon: const Icon(Icons.open_in_new_rounded, size: 14),
+                    label: const Text(
+                      'Open Tab',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                    ),
+                    onPressed: onManageInTab,
+                  ),
+                  const SizedBox(width: 4),
+                ],
                 TextButton.icon(
                   style: TextButton.styleFrom(
                     visualDensity: VisualDensity.compact,

@@ -134,4 +134,32 @@ void main() {
     expect(find.text("Child's Higher Education"), findsAtLeastNWidgets(1));
     expect(find.text('Total Milestone Goals'), findsOneWidget);
   });
+
+  testWidgets('Navigating to Milestones & Life Events tab displays dedicated screen', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1280, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    SharedPreferences.setMockInitialValues({});
+    final historyService = HistoryService();
+    await historyService.loadHistory();
+    final controller = FireCalculatorController(historyService: historyService);
+
+    await tester.pumpWidget(FireCalculatorApp(controller: controller));
+    await tester.pumpAndSettle();
+
+    // Tap on Milestones & Life Events tab in left navigation rail
+    await tester.tap(find.text('Milestones & Life Events').first, warnIfMissed: false);
+    await tester.pumpAndSettle();
+
+    // Verify dedicated screen elements
+    expect(find.text('Major Milestones & Life Events'), findsOneWidget);
+    expect(find.text('NEW MILESTONE GOAL'), findsOneWidget);
+    expect(find.text('1-CLICK PRESET GOALS'), findsOneWidget);
+    expect(find.text('How Sinking Fund SIP Works'), findsOneWidget);
+    expect(find.text('Total Capital Outlay'), findsOneWidget);
+  });
 }

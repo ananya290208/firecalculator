@@ -9,6 +9,7 @@ import 'comparison_screen.dart';
 import 'dashboard_screen.dart';
 import 'debt_bucket_screen.dart';
 import 'liabilities_emi_screen.dart';
+import 'milestone_expenses_screen.dart';
 import 'schedule_matrix_screen.dart';
 import 'swp_sip_screen.dart';
 
@@ -47,18 +48,24 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             controller: widget.controller,
             onNavigateToCalculator: () => _navigateToIndex(1),
             onNavigateToLiabilities: () => _navigateToIndex(2),
-            onNavigateToSwpSip: () => _navigateToIndex(3),
-            onNavigateToDebtBucket: () => _navigateToIndex(4),
-            onNavigateToSchedule: () => _navigateToIndex(5),
+            onNavigateToMilestones: () => _navigateToIndex(3),
+            onNavigateToSwpSip: () => _navigateToIndex(4),
+            onNavigateToDebtBucket: () => _navigateToIndex(5),
+            onNavigateToSchedule: () => _navigateToIndex(6),
           ),
           CalculatorScreen(
             controller: widget.controller,
-            onNavigateToComparison: () => _navigateToIndex(6),
+            onNavigateToComparison: () => _navigateToIndex(7),
             onNavigateToLiabilities: () => _navigateToIndex(2),
+            onNavigateToMilestones: () => _navigateToIndex(3),
             authService: widget.authService,
           ),
           LiabilitiesEmiScreen(
             controller: widget.controller,
+          ),
+          MilestoneExpensesScreen(
+            controller: widget.controller,
+            onNavigateToCalculator: () => _navigateToIndex(1),
           ),
           SwpSipScreen(
             controller: widget.controller,
@@ -117,6 +124,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       icon: Icon(Icons.account_balance_outlined),
                       selectedIcon: Icon(Icons.account_balance_rounded),
                       label: 'Liabilities',
+                    ),
+                    const NavigationDestination(
+                      icon: Icon(Icons.celebration_outlined),
+                      selectedIcon: Icon(Icons.celebration_rounded),
+                      label: 'Milestones',
                     ),
                     const NavigationDestination(
                       icon: Icon(Icons.swap_horiz_outlined),
@@ -202,6 +214,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                         icon: Icon(Icons.account_balance_outlined),
                         selectedIcon: Icon(Icons.account_balance_rounded),
                         label: Text('Liabilities & EMI'),
+                      ),
+                      const NavigationRailDestination(
+                        icon: Icon(Icons.celebration_outlined),
+                        selectedIcon: Icon(Icons.celebration_rounded),
+                        label: Text('Milestones & Life Events'),
                       ),
                       const NavigationRailDestination(
                         icon: Icon(Icons.swap_horiz_outlined),
