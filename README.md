@@ -58,6 +58,17 @@ A cross-platform Flutter application (iOS & Android) that replicates the functio
 
 ---
 
+## 📚 Documentation & Research Reports
+
+Comprehensive research, user manuals, and benchmark comparisons included in the repository:
+
+- 📄 **[Indian Tools Benchmark & Comparison (.docx)](FIRE_Calculator_Comprehensive_Indian_Tools_Comparison.docx)** / **[(.md)](FIRE_Calculator_Comprehensive_Indian_Tools_Comparison.md)**: In-depth benchmark of our FIRE Simulator against 10 Indian platforms (Groww, Zerodha, Scripbox, Kuvera, Freefincal, The 1% Club, Ionic Wealth, ET Money, ClearTax, Insurance portals).
+- 📄 **[Global FIRE Calculators Benchmark (.pdf)](FIRE_Calculator_Comprehensive_Comparison_Internationl.pdf)** / **[(.md)](FIRE_Calculator_Comprehensive_Comparison_Report.md)**: Global comparison against FireCalc, cFIREsim, Engaging Data, ProjectionLab, and Networthify.
+- 📘 **[FIRE Calculator Comprehensive User Guide (.pdf)](FIRE_Calculator_Comprehensive_Guide.pdf)**: Complete reference manual and mathematical framework.
+- 📗 **[FIRE App Run Guide (.pdf)](FIRE%20app%20Run%20guide.pdf)**: Step-by-step developer and user setup guide.
+
+---
+
 ## 🛠️ Getting Started
 
 ### Prerequisites
