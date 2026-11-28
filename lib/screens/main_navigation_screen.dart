@@ -86,6 +86,38 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     }
   }
 
+  void _confirmLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.logout_rounded, color: AppTheme.primaryGreen),
+            SizedBox(width: 8),
+            Text('Log Out'),
+          ],
+        ),
+        content: Text(
+          'Log out of account "${widget.authService?.userName ?? 'User'}" on this browser?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.primaryNavy),
+            onPressed: () {
+              Navigator.pop(ctx);
+              widget.authService?.logout();
+            },
+            child: const Text('Log Out'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showDemoLockedDialog(BuildContext context, String featureName) {
     showDialog(
       context: context,
@@ -543,7 +575,36 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                             ),
                           )
                         : (kIsWeb
-                            ? null
+                            ? (widget.authService != null
+                                ? Expanded(
+                                    child: Align(
+                                      alignment: Alignment.bottomCenter,
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(bottom: 16),
+                                        child: isDesktop
+                                            ? TextButton.icon(
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor: AppTheme.textMuted,
+                                                  padding: const EdgeInsets.symmetric(
+                                                      horizontal: 14, vertical: 8),
+                                                ),
+                                                icon: const Icon(Icons.logout_rounded, size: 16),
+                                                label: const Text('Log Out',
+                                                    style: TextStyle(
+                                                        fontWeight: FontWeight.w600,
+                                                        fontSize: 13)),
+                                                onPressed: () => _confirmLogout(context),
+                                              )
+                                            : IconButton(
+                                                icon: const Icon(Icons.logout_rounded,
+                                                    color: AppTheme.textMuted),
+                                                tooltip: 'Log Out',
+                                                onPressed: () => _confirmLogout(context),
+                                              ),
+                                      ),
+                                    ),
+                                  )
+                                : null)
                             : Expanded(
                                 child: Align(
                                   alignment: Alignment.bottomCenter,
