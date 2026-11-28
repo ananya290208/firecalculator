@@ -39,7 +39,7 @@ class FireCalculatorApp extends StatelessWidget {
     final effectiveAuth = authService;
 
     return MaterialApp(
-      title: 'FIRE Calculator (INR)',
+      title: "Ananya's",
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
