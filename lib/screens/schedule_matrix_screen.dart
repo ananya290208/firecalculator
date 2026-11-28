@@ -452,11 +452,11 @@ class _ScheduleMatrixScreenState extends State<ScheduleMatrixScreen> {
     return Container(
       margin: EdgeInsets.only(bottom: isMobile ? 12 : 0),
       decoration: BoxDecoration(
-        color: isCurrent ? AppTheme.primaryGreenLight.withOpacity(0.4) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: isCurrent ? AppTheme.navyLight : Colors.white,
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: isCurrent ? AppTheme.secondaryTeal : AppTheme.borderLight,
-          width: isCurrent ? 2 : 1,
+          color: isCurrent ? AppTheme.primaryNavy : AppTheme.borderLight,
+          width: isCurrent ? 1.5 : 1.0,
         ),
       ),
       padding: const EdgeInsets.all(16),

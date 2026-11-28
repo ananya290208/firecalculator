@@ -304,22 +304,12 @@ class _LiabilitiesEmiScreenState extends State<LiabilitiesEmiScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: hasOverhang
-              ? [const Color(0xFF9A3412), const Color(0xFFEA580C)]
-              : [AppTheme.primaryNavy, const Color(0xFF2563EB)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        color: AppTheme.primaryNavy,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: hasOverhang ? const Color(0xFFF97316).withOpacity(0.5) : const Color(0xFF334155),
+          width: 1,
         ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: (hasOverhang ? Colors.deepOrange : AppTheme.primaryNavy)
-                .withOpacity(0.25),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
       ),
       padding: const EdgeInsets.all(18),
       child: Column(
@@ -343,10 +333,13 @@ class _LiabilitiesEmiScreenState extends State<LiabilitiesEmiScreen> {
               ),
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
+                  color: hasOverhang ? const Color(0xFF9A3412) : const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: hasOverhang ? const Color(0xFFEA580C) : const Color(0xFF334155),
+                  ),
                 ),
                 child: Text(
                   hasOverhang
@@ -355,7 +348,7 @@ class _LiabilitiesEmiScreenState extends State<LiabilitiesEmiScreen> {
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
-                    fontSize: 12,
+                    fontSize: 11,
                   ),
                 ),
               ),

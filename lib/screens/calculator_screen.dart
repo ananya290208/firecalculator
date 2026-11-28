@@ -739,14 +739,14 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         hasOverhang ? const Color(0xFFE11D48) : AppTheme.primaryGreen;
 
     return Card(
-      elevation: 2,
+      elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(10),
         side: BorderSide(
           color: hasOverhang
               ? const Color(0xFFE11D48).withOpacity(0.35)
-              : AppTheme.primaryGreen.withOpacity(0.35),
-          width: 1.5,
+              : AppTheme.borderLight,
+          width: 1.0,
         ),
       ),
       child: Padding(
@@ -761,7 +761,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: accentColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: Icon(
                     hasOverhang
@@ -799,14 +799,14 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
+                    horizontal: 8,
+                    vertical: 3,
                   ),
                   decoration: BoxDecoration(
                     color: hasOverhang
                         ? const Color(0xFFFFF1F2)
                         : const Color(0xFFECFDF5),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(6),
                     border: Border.all(
                       color: hasOverhang
                           ? const Color(0xFFFDA4AF)
@@ -974,12 +974,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     if (!hasGoals) {
       // Clean, compact prompt card inviting user to plan milestones
       return Card(
-        elevation: 1,
+        elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: accentColor.withOpacity(0.25),
-            width: 1.2,
+          borderRadius: BorderRadius.circular(10),
+          side: const BorderSide(
+            color: AppTheme.borderLight,
+            width: 1.0,
           ),
         ),
         child: Padding(
@@ -1040,12 +1040,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
     // Detailed Impact Card when goals are active
     return Card(
-      elevation: 2,
+      elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: accentColor.withOpacity(0.35),
-          width: 1.5,
+        borderRadius: BorderRadius.circular(10),
+        side: const BorderSide(
+          color: AppTheme.borderLight,
+          width: 1.0,
         ),
       ),
       child: Padding(
@@ -1060,7 +1060,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: accentColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: const Icon(
                     Icons.celebration_rounded,
@@ -1093,10 +1093,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFDF2F8),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(6),
                     border: Border.all(color: const Color(0xFFFBCFE8)),
                   ),
                   child: Text(

@@ -30,7 +30,7 @@ class MetricBadge extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(color: color.withOpacity(0.3), width: 1),
       ),
       child: Row(

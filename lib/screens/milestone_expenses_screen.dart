@@ -719,7 +719,7 @@ class _MilestoneExpensesScreenState extends State<MilestoneExpensesScreen> {
       padding: EdgeInsets.all(isMobile ? 12 : 16),
       decoration: BoxDecoration(
         color: const Color(0xFFFDF2F8),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: const Color(0xFFFBCFE8)),
       ),
       child: Row(

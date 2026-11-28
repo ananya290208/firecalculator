@@ -371,7 +371,7 @@ class _DebtBucketScreenState extends State<DebtBucketScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: AppTheme.borderLight),
       ),
       padding: const EdgeInsets.all(16),
