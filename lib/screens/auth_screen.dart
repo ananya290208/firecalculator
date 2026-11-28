@@ -264,8 +264,8 @@ class _AuthScreenState extends State<AuthScreen> {
                           // Login / Register Tab Switcher
                           Container(
                             decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(12),
+                              color: AppTheme.navyLight,
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: Row(
                               children: [
@@ -283,9 +283,9 @@ class _AuthScreenState extends State<AuthScreen> {
                                       ),
                                       decoration: BoxDecoration(
                                         color: _isLogin
-                                            ? AppTheme.primaryGreen
+                                            ? AppTheme.primaryNavy
                                             : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Center(
                                         child: Text(
@@ -316,9 +316,9 @@ class _AuthScreenState extends State<AuthScreen> {
                                       ),
                                       decoration: BoxDecoration(
                                         color: !_isLogin
-                                            ? AppTheme.primaryGreen
+                                            ? AppTheme.primaryNavy
                                             : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Center(
                                         child: Text(

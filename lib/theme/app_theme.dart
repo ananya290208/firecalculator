@@ -2,29 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Brand & Financial Palette
-  static const Color primaryNavy = Color(0xFF1B365D); // Deep Navy
-  static const Color secondaryTeal = Color(0xFF0F766E); // Teal
-  static const Color primaryGreen = secondaryTeal;
-  static const Color primaryGreenDark = Color(0xFF115E59);
-  static const Color primaryGreenLight = Color(0xFFCCFBF1);
-  static const Color navyLight = Color(0xFFE2E8F0);
+  // Brand & Financial Palette - Institutional Executive
+  static const Color primaryNavy = Color(0xFF0F172A); // Obsidian Slate / Deep Executive Navy
+  static const Color secondaryTeal = Color(0xFF0F766E); // Refined Forest Teal
+  static const Color primaryGreen = Color(0xFF047857); // Institutional Emerald
+  static const Color primaryGreenDark = Color(0xFF064E3B); // Deep Forest
+  static const Color primaryGreenLight = Color(0xFFECFDF5); // Subtle Emerald 50 tint
+  static const Color navyLight = Color(0xFFF1F5F9); // Crisp Slate 100
 
   // Accents & Rules
-  static const Color accentAmber = Color(0xFFF59E0B);
-  static const Color accentAmberLight = Color(0xFFFEF3C7);
-  static const Color surplusGreen = Color(0xFF059669);
-  static const Color shortfallRed = Color(0xFFDC2626);
-  static const Color blue25x = Color(0xFF2563EB);
-  static const Color purple30x = Color(0xFF7C3AED);
+  static const Color accentAmber = Color(0xFFD97706); // Restrained Amber
+  static const Color accentAmberLight = Color(0xFFFFFBEB); // Subtle Amber 50
+  static const Color surplusGreen = Color(0xFF059669); // Emerald 600
+  static const Color shortfallRed = Color(0xFFDC2626); // Crimson 600
+  static const Color blue25x = Color(0xFF1D4ED8); // Executive Blue
+  static const Color purple30x = Color(0xFF6D28D9); // Deep Violet
 
   // Backgrounds & Surfaces
-  static const Color bgLight = Color(0xFFF8FAFC); // Soft Slate
+  static const Color bgLight = Color(0xFFF8FAFC); // Slate 50
   static const Color backgroundLight = bgLight;
   static const Color cardLight = Colors.white;
-  static const Color textDark = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
-  static const Color borderLight = Color(0xFFE2E8F0); // 1px subtle border
+  static const Color textDark = Color(0xFF0F172A); // Slate 900
+  static const Color textMuted = Color(0xFF64748B); // Slate 500
+  static const Color borderLight = Color(0xFFE2E8F0); // 1px subtle Slate 200 border
 
   // Dark Mode
   static const Color bgDark = Color(0xFF0B132B);
@@ -54,10 +54,10 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: cardLight,
-        elevation: 1.0,
-        shadowColor: Colors.black.withValues(alpha: 0.04),
+        elevation: 0,
+        shadowColor: Colors.black.withValues(alpha: 0.03),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(10),
           side: const BorderSide(color: borderLight, width: 1),
         ),
       ),
@@ -66,22 +66,58 @@ class AppTheme {
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: borderLight),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: borderLight),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryNavy, width: 1.8),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: primaryNavy, width: 1.5),
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: const BorderSide(color: borderLight, width: 1),
+        ),
+        backgroundColor: Colors.white,
+        selectedColor: primaryNavy.withValues(alpha: 0.08),
+        labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textDark),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: primaryNavy,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+          elevation: 0,
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryNavy,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+          elevation: 0,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: primaryNavy,
+          side: const BorderSide(color: borderLight, width: 1),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: Colors.white,
-        indicatorColor: primaryGreenLight,
-        elevation: 3,
+        indicatorColor: primaryNavy.withValues(alpha: 0.08),
+        elevation: 0,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return const TextStyle(
@@ -99,8 +135,8 @@ class AppTheme {
       ),
       navigationRailTheme: NavigationRailThemeData(
         backgroundColor: Colors.white,
-        elevation: 1,
-        indicatorColor: primaryGreenLight,
+        elevation: 0,
+        indicatorColor: primaryNavy.withValues(alpha: 0.08),
         selectedLabelTextStyle: const TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w700,
@@ -136,10 +172,10 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: cardDark,
-        elevation: 2,
-        shadowColor: Colors.black.withValues(alpha: 0.3),
+        elevation: 0,
+        shadowColor: Colors.black.withValues(alpha: 0.2),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(10),
           side: const BorderSide(color: borderDark, width: 1),
         ),
       ),
@@ -148,26 +184,26 @@ class AppTheme {
         fillColor: const Color(0xFF151E38),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: borderDark),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: borderDark),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF60A5FA), width: 1.8),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF60A5FA), width: 1.5),
         ),
       ),
       navigationBarTheme: const NavigationBarThemeData(
         backgroundColor: cardDark,
-        indicatorColor: Color(0xFF134E4A),
-        elevation: 4,
+        indicatorColor: Color(0xFF1E293B),
+        elevation: 0,
       ),
       navigationRailTheme: const NavigationRailThemeData(
         backgroundColor: cardDark,
-        indicatorColor: Color(0xFF134E4A),
+        indicatorColor: Color(0xFF1E293B),
       ),
     );
   }

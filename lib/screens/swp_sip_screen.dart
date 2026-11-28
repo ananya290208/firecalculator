@@ -299,25 +299,43 @@ class _SwpSipScreenState extends State<SwpSipScreen> {
               Column(
                 children: fields
                     .map((f) => Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.only(bottom: 12),
                           child: f,
                         ))
                     .toList(),
               )
             else
-              Wrap(
-                spacing: 12,
-                runSpacing: 10,
-                children: fields
-                    .map((f) => SizedBox(
-                          width: 250,
-                          child: f,
-                        ))
-                    .toList(),
-              ),
+              _buildTwoColumnFields(fields),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTwoColumnFields(List<Widget> fields) {
+    final List<Widget> rows = [];
+    for (int i = 0; i < fields.length; i += 2) {
+      final first = fields[i];
+      final second = (i + 1 < fields.length) ? fields[i + 1] : null;
+      rows.add(
+        Padding(
+          padding: EdgeInsets.only(bottom: i + 2 < fields.length ? 16 : 0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: first),
+              const SizedBox(width: 18),
+              Expanded(
+                child: second ?? const SizedBox.shrink(),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: rows,
     );
   }
 
@@ -328,10 +346,10 @@ class _SwpSipScreenState extends State<SwpSipScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: s.isBaseline ? const Color(0xFFF0FDF4) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: s.isBaseline ? AppTheme.secondaryTeal : AppTheme.borderLight,
-          width: s.isBaseline ? 1.8 : 1.0,
+          color: s.isBaseline ? AppTheme.primaryNavy : AppTheme.borderLight,
+          width: s.isBaseline ? 1.5 : 1.0,
         ),
       ),
       padding: const EdgeInsets.all(14),

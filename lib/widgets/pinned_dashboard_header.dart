@@ -55,21 +55,10 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
   Widget _buildDesktopBanner(ComprehensiveFireSummary summary) {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0F766E)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.28),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: const Border(
-          bottom: BorderSide(color: Color(0xFF14B8A6), width: 1.5),
+      decoration: const BoxDecoration(
+        color: Color(0xFF0F172A),
+        border: Border(
+          bottom: BorderSide(color: Color(0xFF334155), width: 1.0),
         ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -89,10 +78,11 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
                       Container(
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF14B8A6).withOpacity(0.25),
+                          color: const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFF334155)),
                         ),
-                        child: const Icon(Icons.insights_rounded, color: Color(0xFF2DD4BF), size: 16),
+                        child: const Icon(Icons.insights_rounded, color: Colors.white, size: 16),
                       ),
                       const SizedBox(width: 8),
                       const Text(
@@ -108,12 +98,13 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.08),
+                          color: const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: const Color(0xFF334155)),
                         ),
                         child: const Text(
-                          'FIXED LIVE TRACKER',
-                          style: TextStyle(color: Color(0xFF6EE7B7), fontSize: 9, fontWeight: FontWeight.w700),
+                          'LIVE TRACKER',
+                          style: TextStyle(color: Color(0xFF94A3B8), fontSize: 9, fontWeight: FontWeight.w700),
                         ),
                       ),
                     ],
@@ -236,21 +227,10 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
   Widget _buildTabletBanner(ComprehensiveFireSummary summary) {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0F766E)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-        border: const Border(
-          bottom: BorderSide(color: Color(0xFF14B8A6), width: 1.5),
+      decoration: const BoxDecoration(
+        color: Color(0xFF0F172A),
+        border: Border(
+          bottom: BorderSide(color: Color(0xFF334155), width: 1.0),
         ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -267,7 +247,7 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
               const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.insights_rounded, color: Color(0xFF2DD4BF), size: 15),
+                  Icon(Icons.insights_rounded, color: Colors.white70, size: 15),
                   SizedBox(width: 6),
                   Text(
                     'COMPREHENSIVE FIRE DASHBOARD',
@@ -384,21 +364,10 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
   Widget _buildMobileBanner(ComprehensiveFireSummary summary) {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0F766E)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.3),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: const Border(
-          bottom: BorderSide(color: Color(0xFF14B8A6), width: 1.5),
+      decoration: const BoxDecoration(
+        color: Color(0xFF0F172A),
+        border: Border(
+          bottom: BorderSide(color: Color(0xFF334155), width: 1.0),
         ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -412,7 +381,7 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.insights_rounded, color: Color(0xFF2DD4BF), size: 14),
+                  const Icon(Icons.insights_rounded, color: Colors.white70, size: 14),
                   const SizedBox(width: 5),
                   const Text(
                     'FIRE DASHBOARD',
@@ -785,14 +754,18 @@ class _PinnedDashboardHeaderState extends State<PinnedDashboardHeader> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF14B8A6) : Colors.white.withOpacity(0.1),
+                  color: isSelected ? const Color(0xFF334155) : Colors.white.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: isSelected ? const Color(0xFF64748B) : Colors.transparent,
+                    width: 1,
+                  ),
                 ),
                 child: Text(
                   '${yr.toInt()}Y',
                   style: TextStyle(
                     fontSize: 10,
-                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
                     color: isSelected ? Colors.white : Colors.white70,
                   ),
                 ),

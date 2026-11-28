@@ -357,17 +357,17 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       decoration: BoxDecoration(
-        color: isDemo ? const Color(0xFFFEF3C7) : AppTheme.accentAmberLight,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isDemo ? const Color(0xFFF59E0B) : AppTheme.accentAmber.withOpacity(0.4)),
+        color: isDemo ? const Color(0xFFFFFBEB) : Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: isDemo ? const Color(0xFFFCD34D) : AppTheme.borderLight),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(
             isDemo ? Icons.bolt_rounded : Icons.info_outline_rounded,
-            color: const Color(0xFFB45309),
-            size: 22,
+            color: isDemo ? const Color(0xFFB45309) : AppTheme.primaryNavy,
+            size: 20,
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -394,11 +394,11 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                   ),
                 ] else ...[
                   const Text(
-                    'Enter fields in Section 1 to dynamically recalculate year Year-By-Year Corpus and FIRE targets.',
+                    'Enter fields in Section 1 to dynamically recalculate Year-By-Year Corpus and FIRE targets.',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF92400E),
+                      color: AppTheme.textDark,
                     ),
                   ),
                 ],
@@ -495,22 +495,9 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.primaryGreenDark,
-            AppTheme.primaryGreen,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryGreen.withOpacity(0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        color: AppTheme.primaryNavy,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFF334155), width: 1),
       ),
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       child: Column(
@@ -544,17 +531,18 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
-                        vertical: 4,
+                        vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE11D48).withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(16),
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: const Color(0xFF475569)),
                       ),
                       child: Text(
                         '+${CurrencyFormatter.formatCompactINR(emiResults.postRetirementEmiPv)} Debt PV',
                         style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
+                          color: Color(0xFFFCA5A5),
+                          fontWeight: FontWeight.w700,
                           fontSize: 10,
                         ),
                       ),
@@ -565,17 +553,18 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
-                        vertical: 4,
+                        vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFDB2777).withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(16),
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: const Color(0xFF475569)),
                       ),
                       child: Text(
                         '+${CurrencyFormatter.formatCompactINR(summary.totalMilestoneExpenses)} Goals',
                         style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
+                          color: Color(0xFFF472B6),
+                          fontWeight: FontWeight.w700,
                           fontSize: 10,
                         ),
                       ),
@@ -584,12 +573,13 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                   ],
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
+                      horizontal: 8,
+                      vertical: 3,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
+                      color: const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFF334155)),
                     ),
                     child: Text(
                       CurrencyFormatter.formatCrores(
@@ -599,7 +589,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
-                        fontSize: 13,
+                        fontSize: 12,
                       ),
                     ),
                   ),

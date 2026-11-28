@@ -31,12 +31,12 @@ class StatCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: isHighlighted
-            ? color.withOpacity(0.06)
+            ? color.withValues(alpha: 0.04)
             : theme.cardTheme.color ?? Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: isHighlighted
-              ? color.withOpacity(0.4)
+              ? color.withValues(alpha: 0.35)
               : AppTheme.borderLight,
           width: isHighlighted ? 1.5 : 1.0,
         ),
@@ -51,8 +51,8 @@ class StatCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(8),
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: Icon(icon, size: 15, color: color),
                 ),

@@ -682,51 +682,68 @@ class _LiabilitiesEmiScreenState extends State<LiabilitiesEmiScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryGreenLight,
-                        borderRadius: BorderRadius.circular(8),
+                        color: AppTheme.primaryNavy.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         inputs.tenureFormatted,
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          color: AppTheme.secondaryTeal,
+                          color: AppTheme.primaryNavy,
                         ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Slider(
-                  value: inputs.remainingEmiMonths.toDouble(),
-                  min: 0,
-                  max: 300,
-                  divisions: 60,
-                  label: '${inputs.remainingEmiMonths} Mo',
-                  onChanged: (val) {
-                    widget.controller
-                        .updateEmiField(remainingEmiMonths: val.round());
-                  },
-                ),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [0, 24, 36, 60, 84, 120, 180, 240].map((m) {
-                      final bool isSel = inputs.remainingEmiMonths == m;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 4),
-                        child: ChoiceChip(
-                          label: Text('$m Mo',
-                              style: const TextStyle(
-                                  fontSize: 10, fontWeight: FontWeight.w600)),
-                          selected: isSel,
-                          visualDensity: VisualDensity.compact,
-                          onSelected: (_) => widget.controller
-                              .updateEmiField(remainingEmiMonths: m),
+                Builder(
+                  builder: (context) {
+                    const options = [24, 48, 60, 84, 120];
+                    final curIdx = options.indexOf(inputs.remainingEmiMonths);
+                    final sliderVal = curIdx >= 0 ? curIdx.toDouble() : 0.0;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Slider(
+                          value: sliderVal,
+                          min: 0,
+                          max: (options.length - 1).toDouble(),
+                          divisions: options.length - 1,
+                          label: '${options[sliderVal.round()]} Mo',
+                          onChanged: (val) {
+                            widget.controller.updateEmiField(
+                              remainingEmiMonths: options[val.round()],
+                            );
+                          },
                         ),
-                      );
-                    }).toList(),
-                  ),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: options.map((m) {
+                              final bool isSel = inputs.remainingEmiMonths == m;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 6),
+                                child: ChoiceChip(
+                                  label: Text(
+                                    '$m Mo (${m ~/ 12} Yrs)',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
+                                    ),
+                                  ),
+                                  selected: isSel,
+                                  visualDensity: VisualDensity.compact,
+                                  onSelected: (_) => widget.controller
+                                      .updateEmiField(remainingEmiMonths: m),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ],
             ),

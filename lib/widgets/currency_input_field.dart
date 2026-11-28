@@ -135,7 +135,7 @@ class _CurrencyInputFieldState extends State<CurrencyInputField> {
     return Container(
       decoration: BoxDecoration(
         color: theme.cardTheme.color ?? Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: AppTheme.borderLight),
       ),
       padding: const EdgeInsets.all(10),
@@ -230,7 +230,7 @@ class _CurrencyInputFieldState extends State<CurrencyInputField> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 1.5),
+                            borderSide: const BorderSide(color: AppTheme.primaryNavy, width: 1.5),
                           ),
                         ),
                         onSubmitted: _onSubmitted,
@@ -284,8 +284,8 @@ class _CurrencyInputFieldState extends State<CurrencyInputField> {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.primaryGreen,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.primaryNavy,
                   ),
                 ),
               ),
@@ -312,7 +312,14 @@ class _CurrencyInputFieldState extends State<CurrencyInputField> {
                     child: ChoiceChip(
                       label: Text(chipLabel, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600)),
                       selected: isSelected,
-                      selectedColor: AppTheme.primaryGreenLight,
+                      selectedColor: AppTheme.primaryNavy.withValues(alpha: 0.08),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                        side: BorderSide(
+                          color: isSelected ? AppTheme.primaryNavy : AppTheme.borderLight,
+                          width: 1,
+                        ),
+                      ),
                       visualDensity: VisualDensity.compact,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
