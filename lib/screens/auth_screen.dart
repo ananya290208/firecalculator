@@ -101,30 +101,31 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.bgLight,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          if (!kIsWeb) ...[
-            const ExitButton(),
-            const SizedBox(width: 8),
-          ],
-        ],
-      ),
+      appBar: kIsWeb
+          ? null
+          : AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              actions: const [
+                ExitButton(),
+                SizedBox(width: 8),
+              ],
+            ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 440),
+              constraints: const BoxConstraints(maxWidth: 420),
               child: Card(
-                elevation: 3,
+                elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(10),
+                  side: const BorderSide(color: AppTheme.borderLight, width: 1),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -134,72 +135,58 @@ class _AuthScreenState extends State<AuthScreen> {
                         // App Icon & Title
                         Center(
                           child: Container(
-                            width: 60,
-                            height: 60,
+                            width: 42,
+                            height: 42,
                             decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppTheme.primaryGreenDark,
-                                  AppTheme.primaryGreen,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(18),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.primaryGreen.withOpacity(0.3),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                              color: AppTheme.primaryNavy,
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Icon(
                               Icons.savings_rounded,
                               color: Colors.white,
-                              size: 32,
+                              size: 22,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 6),
                         const Center(
                           child: FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
                               'FIRE Simulator',
                               style: TextStyle(
-                                fontSize: 22,
+                                fontSize: 17,
                                 fontWeight: FontWeight.w800,
-                                letterSpacing: 0.5,
+                                letterSpacing: 0.3,
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         const Center(
                           child: Text(
                             'Financial Independence & Early Retirement',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               color: AppTheme.textMuted,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 10),
 
                         if (kIsWeb) ...[
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 10,
+                              horizontal: 10,
+                              vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryNavy.withOpacity(0.08),
-                              borderRadius: BorderRadius.circular(12),
+                              color: AppTheme.primaryNavy.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: AppTheme.primaryNavy.withOpacity(0.2),
+                                color: AppTheme.primaryNavy.withValues(alpha: 0.15),
                               ),
                             ),
                             child: const Row(
@@ -207,22 +194,22 @@ class _AuthScreenState extends State<AuthScreen> {
                               children: [
                                 Icon(
                                   Icons.shield_outlined,
-                                  size: 16,
+                                  size: 14,
                                   color: AppTheme.primaryNavy,
                                 ),
-                                SizedBox(width: 8),
+                                SizedBox(width: 6),
                                 Text(
                                   'Web Portal Secure Sign In',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w700,
-                                    fontSize: 13,
+                                    fontSize: 11,
                                     color: AppTheme.primaryNavy,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 10),
                         ] else ...[
                           // Local Storage Notice Badge (Responsive with Expanded)
                           Container(
@@ -265,7 +252,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           Container(
                             decoration: BoxDecoration(
                               color: AppTheme.navyLight,
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(6),
                             ),
                             child: Row(
                               children: [
@@ -279,20 +266,20 @@ class _AuthScreenState extends State<AuthScreen> {
                                     },
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
-                                        vertical: 10,
+                                        vertical: 7,
                                       ),
                                       decoration: BoxDecoration(
                                         color: _isLogin
                                             ? AppTheme.primaryNavy
                                             : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(8),
+                                        borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Center(
                                         child: Text(
                                           'Sign In',
                                           style: TextStyle(
                                             fontWeight: FontWeight.w700,
-                                            fontSize: 13,
+                                            fontSize: 12,
                                             color: _isLogin
                                                 ? Colors.white
                                                 : AppTheme.textMuted,
@@ -312,20 +299,20 @@ class _AuthScreenState extends State<AuthScreen> {
                                     },
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
-                                        vertical: 10,
+                                        vertical: 7,
                                       ),
                                       decoration: BoxDecoration(
                                         color: !_isLogin
                                             ? AppTheme.primaryNavy
                                             : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(8),
+                                        borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Center(
                                         child: Text(
                                           'Create Account',
                                           style: TextStyle(
                                             fontWeight: FontWeight.w700,
-                                            fontSize: 13,
+                                            fontSize: 12,
                                             color: !_isLogin
                                                 ? Colors.white
                                                 : AppTheme.textMuted,
@@ -338,16 +325,16 @@ class _AuthScreenState extends State<AuthScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 10),
                         ],
 
                         // Error Banner if any
                         if (_errorMessage != null) ...[
                           Container(
-                            padding: const EdgeInsets.all(10),
+                            padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: Colors.red.shade50,
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(6),
                               border: Border.all(color: Colors.red.shade200),
                             ),
                             child: Row(
@@ -355,14 +342,14 @@ class _AuthScreenState extends State<AuthScreen> {
                                 const Icon(
                                   Icons.error_outline_rounded,
                                   color: Colors.red,
-                                  size: 18,
+                                  size: 16,
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     _errorMessage!,
                                     style: const TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 11,
                                       color: Colors.red,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -371,7 +358,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 10),
                         ],
 
                         // Name Field (Register mode only)
@@ -379,10 +366,13 @@ class _AuthScreenState extends State<AuthScreen> {
                           TextFormField(
                             controller: _nameController,
                             textCapitalization: TextCapitalization.words,
+                            style: const TextStyle(fontSize: 12),
                             decoration: const InputDecoration(
                               labelText: 'Full Name',
                               hintText: 'e.g., Rajesh Sharma',
-                              prefixIcon: Icon(Icons.person_outline_rounded),
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              prefixIcon: Icon(Icons.person_outline_rounded, size: 18),
                               border: OutlineInputBorder(),
                             ),
                             validator: (val) {
@@ -392,17 +382,20 @@ class _AuthScreenState extends State<AuthScreen> {
                               return null;
                             },
                           ),
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 10),
                         ],
 
                         // Email Field
                         TextFormField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
+                          style: const TextStyle(fontSize: 12),
                           decoration: const InputDecoration(
                             labelText: 'Email Address / Username',
                             hintText: 'user@example.com',
-                            prefixIcon: Icon(Icons.email_outlined),
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            prefixIcon: Icon(Icons.email_outlined, size: 18),
                             border: OutlineInputBorder(),
                           ),
                           validator: (val) {
@@ -412,22 +405,27 @@ class _AuthScreenState extends State<AuthScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 10),
 
                         // Password Field
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
+                          style: const TextStyle(fontSize: 12),
                           decoration: InputDecoration(
                             labelText: 'Password',
-                            prefixIcon: const Icon(Icons.lock_outline_rounded),
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            prefixIcon: const Icon(Icons.lock_outline_rounded, size: 18),
                             border: const OutlineInputBorder(),
                             suffixIcon: IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                               icon: Icon(
                                 _obscurePassword
                                     ? Icons.visibility_outlined
                                     : Icons.visibility_off_outlined,
-                                size: 20,
+                                size: 18,
                               ),
                               onPressed: () {
                                 setState(() {
@@ -446,23 +444,28 @@ class _AuthScreenState extends State<AuthScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 10),
 
                         // Confirm Password (Register mode only)
                         if (!_isLogin) ...[
                           TextFormField(
                             controller: _confirmPasswordController,
                             obscureText: _obscureConfirmPassword,
+                            style: const TextStyle(fontSize: 12),
                             decoration: InputDecoration(
                               labelText: 'Confirm Password',
-                              prefixIcon: const Icon(Icons.lock_outline_rounded),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              prefixIcon: const Icon(Icons.lock_outline_rounded, size: 18),
                               border: const OutlineInputBorder(),
                               suffixIcon: IconButton(
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                                 icon: Icon(
                                   _obscureConfirmPassword
                                       ? Icons.visibility_outlined
                                       : Icons.visibility_off_outlined,
-                                  size: 20,
+                                  size: 18,
                                 ),
                                 onPressed: () {
                                   setState(() {
@@ -479,7 +482,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               return null;
                             },
                           ),
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 10),
                         ],
 
                         // Remember Me Checkbox
@@ -493,38 +496,32 @@ class _AuthScreenState extends State<AuthScreen> {
                           title: const Text(
                             'Remember me on this device',
                             style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          subtitle: const Text(
-                            'Stay signed in on subsequent app visits',
-                            style: TextStyle(
                               fontSize: 11,
-                              color: AppTheme.textMuted,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                           contentPadding: EdgeInsets.zero,
                           controlAffinity: ListTileControlAffinity.leading,
                           dense: true,
-                          activeColor: AppTheme.primaryGreen,
+                          visualDensity: VisualDensity.compact,
+                          activeColor: AppTheme.primaryNavy,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
 
                         // Submit Button
                         FilledButton(
                           onPressed: _isLoading ? null : _submit,
                           style: FilledButton.styleFrom(
-                            backgroundColor: AppTheme.primaryGreen,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            backgroundColor: AppTheme.primaryNavy,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(8),
                             ),
                           ),
                           child: _isLoading
                               ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
+                                  height: 16,
+                                  width: 16,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     color: Colors.white,
@@ -535,13 +532,13 @@ class _AuthScreenState extends State<AuthScreen> {
                                       ? 'Sign In to FIRE Simulator'
                                       : 'Create Local Account',
                                   style: const TextStyle(
-                                    fontSize: 15,
+                                    fontSize: 13,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
                         ),
                         if (!kIsWeb) ...[
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 8),
                           // Switch mode hint
                           Center(
                             child: TextButton(
@@ -556,34 +553,34 @@ class _AuthScreenState extends State<AuthScreen> {
                                     ? "New to this device? Create an account"
                                     : "Already registered on this device? Sign In",
                                 style: const TextStyle(
-                                  fontSize: 12,
-                                  color: AppTheme.primaryGreen,
+                                  fontSize: 11,
+                                  color: AppTheme.primaryNavy,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
                           ),
                         ],
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 10),
                         Row(
                           children: [
                             const Expanded(child: Divider()),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
                               child: Text(
                                 'OR EXPLORE AS GUEST',
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 10,
                                   fontWeight: FontWeight.w700,
                                   color: AppTheme.textMuted,
-                                  letterSpacing: 0.6,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
                             ),
                             const Expanded(child: Divider()),
                           ],
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 10),
 
                         // Demo Mode Action Card / Button
                         InkWell(
@@ -591,29 +588,29 @@ class _AuthScreenState extends State<AuthScreen> {
                           onTap: () {
                             widget.authService.enterDemoMode();
                           },
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(8),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                             decoration: BoxDecoration(
                               color: const Color(0xFFF0FDF4),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: const Color(0xFF86EFAC), width: 1.2),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFF86EFAC), width: 1.0),
                             ),
                             child: Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(8),
+                                  padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
                                     color: AppTheme.primaryGreenDark,
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: const Icon(
                                     Icons.play_arrow_rounded,
                                     color: Colors.white,
-                                    size: 20,
+                                    size: 16,
                                   ),
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -621,18 +618,18 @@ class _AuthScreenState extends State<AuthScreen> {
                                       Wrap(
                                         crossAxisAlignment: WrapCrossAlignment.center,
                                         spacing: 6,
-                                        runSpacing: 4,
+                                        runSpacing: 2,
                                         children: [
                                           const Text(
                                             'Demo - FIRE Calculator',
                                             style: TextStyle(
-                                              fontSize: 14,
+                                              fontSize: 12,
                                               fontWeight: FontWeight.w800,
                                               color: AppTheme.primaryNavy,
                                             ),
                                           ),
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                                             decoration: BoxDecoration(
                                               color: const Color(0xFFDCFCE7),
                                               borderRadius: BorderRadius.circular(4),
@@ -640,7 +637,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                             child: const Text(
                                               'FREE PREVIEW',
                                               style: TextStyle(
-                                                fontSize: 9,
+                                                fontSize: 8,
                                                 fontWeight: FontWeight.w800,
                                                 color: Color(0xFF166534),
                                                 letterSpacing: 0.5,
@@ -649,11 +646,11 @@ class _AuthScreenState extends State<AuthScreen> {
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 3),
+                                      const SizedBox(height: 2),
                                       Text(
-                                        'Instant access to core calculator & live executive dashboard',
+                                        'Instant preview of core calculator & live executive dashboard',
                                         style: TextStyle(
-                                          fontSize: 11,
+                                          fontSize: 10,
                                           color: Colors.grey.shade600,
                                           fontWeight: FontWeight.w500,
                                         ),
@@ -661,10 +658,10 @@ class _AuthScreenState extends State<AuthScreen> {
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 6),
+                                const SizedBox(width: 4),
                                 const Icon(
                                   Icons.arrow_forward_ios_rounded,
-                                  size: 14,
+                                  size: 12,
                                   color: AppTheme.primaryGreenDark,
                                 ),
                               ],
