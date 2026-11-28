@@ -17,14 +17,28 @@ class AuthService extends ChangeNotifier {
   bool _isLoggedIn = false;
   bool _isRegistered = false;
   bool _rememberMe = true;
+  bool _isDemoMode = false;
   String _userName = '';
   String _userEmail = '';
 
   bool get isLoggedIn => _isLoggedIn;
   bool get isRegistered => _isRegistered;
   bool get rememberMe => _rememberMe;
+  bool get isDemoMode => _isDemoMode;
   String get userName => _userName;
   String get userEmail => _userEmail;
+
+  /// Activates demo mode for unregistered/exploring users
+  void enterDemoMode() {
+    _isDemoMode = true;
+    notifyListeners();
+  }
+
+  /// Exits demo mode and returns to login / register screen
+  void exitDemoMode() {
+    _isDemoMode = false;
+    notifyListeners();
+  }
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -82,6 +96,7 @@ class AuthService extends ChangeNotifier {
     _rememberMe = rememberMe;
     _isRegistered = true;
     _isLoggedIn = true;
+    _isDemoMode = false;
     notifyListeners();
     return null; // success
   }
@@ -112,6 +127,7 @@ class AuthService extends ChangeNotifier {
         _rememberMe = rememberMe;
         _isRegistered = true;
         _isLoggedIn = true;
+        _isDemoMode = false;
         notifyListeners();
         return null; // success
       } else {
@@ -139,6 +155,7 @@ class AuthService extends ChangeNotifier {
     await prefs.setBool(_keyIsLoggedIn, true);
     _rememberMe = rememberMe;
     _isLoggedIn = true;
+    _isDemoMode = false;
     notifyListeners();
     return null; // success
   }
@@ -156,6 +173,7 @@ class AuthService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyIsLoggedIn, false);
     _isLoggedIn = false;
+    _isDemoMode = false;
     notifyListeners();
   }
 }

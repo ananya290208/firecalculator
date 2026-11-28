@@ -118,5 +118,40 @@ void main() {
       expect(AuthService.webAuthorizedPassword, 'Incredible@08');
       expect(AuthService.webAuthorizedName, 'Sachin Virmalwar');
     });
+
+    test('Demo mode: enterDemoMode and exitDemoMode toggle isDemoMode state cleanly', () {
+      final auth = AuthService();
+      expect(auth.isDemoMode, false);
+
+      auth.enterDemoMode();
+      expect(auth.isDemoMode, true);
+      expect(auth.isLoggedIn, false);
+
+      auth.exitDemoMode();
+      expect(auth.isDemoMode, false);
+      expect(auth.isLoggedIn, false);
+    });
+
+    test('Logging in or registering deactivates demo mode', () async {
+      final auth = AuthService();
+      await auth.init();
+
+      auth.enterDemoMode();
+      expect(auth.isDemoMode, true);
+
+      await auth.register(
+        name: 'Demo Tester',
+        email: 'tester@example.com',
+        password: 'pass1234password',
+      );
+      expect(auth.isDemoMode, false);
+      expect(auth.isLoggedIn, true);
+
+      // Re-enter demo and logout
+      auth.enterDemoMode();
+      expect(auth.isDemoMode, true);
+      await auth.logout();
+      expect(auth.isDemoMode, false);
+    });
   });
 }

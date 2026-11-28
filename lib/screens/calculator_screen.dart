@@ -37,6 +37,10 @@ class CalculatorScreen extends StatefulWidget {
 
 class _CalculatorScreenState extends State<CalculatorScreen> {
   void _confirmLogout(BuildContext context) {
+    if (widget.authService?.isDemoMode == true) {
+      widget.authService?.exitDemoMode();
+      return;
+    }
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -85,6 +89,21 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
             ),
             actions: [
+              if (widget.authService?.isDemoMode == true)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.primaryNavy,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    icon: const Icon(Icons.login_rounded, size: 14),
+                    label: const Text('Sign In', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    onPressed: () => widget.authService?.exitDemoMode(),
+                  ),
+                ),
               IconButton(
                 tooltip: 'Save to Compare',
                 icon: const Icon(Icons.bookmark_add_outlined),
@@ -140,9 +159,9 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                       value: 'logout',
                       child: Row(
                         children: [
-                          const Icon(Icons.logout_rounded, size: 20),
+                          Icon(widget.authService!.isDemoMode ? Icons.login_rounded : Icons.logout_rounded, size: 20),
                           const SizedBox(width: 10),
-                          Text('Log Out (${widget.authService!.userName})'),
+                          Text(widget.authService!.isDemoMode ? 'Sign In / Register' : 'Log Out (${widget.authService!.userName})'),
                         ],
                       ),
                     ),
@@ -334,28 +353,72 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   }
 
   Widget _buildInstructionsBanner() {
+    final isDemo = widget.authService?.isDemoMode == true;
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       decoration: BoxDecoration(
-        color: AppTheme.accentAmberLight,
+        color: isDemo ? const Color(0xFFFEF3C7) : AppTheme.accentAmberLight,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.accentAmber.withOpacity(0.4)),
+        border: Border.all(color: isDemo ? const Color(0xFFF59E0B) : AppTheme.accentAmber.withOpacity(0.4)),
       ),
-      child: const Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(Icons.info_outline_rounded, color: Color(0xFFB45309), size: 20),
-          SizedBox(width: 10),
+          Icon(
+            isDemo ? Icons.bolt_rounded : Icons.info_outline_rounded,
+            color: const Color(0xFFB45309),
+            size: 22,
+          ),
+          const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              'Enter fields in Section 1 to dynamically recalculate year Year-By-Year Corpus and FIRE targets.',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF92400E),
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (isDemo) ...[
+                  const Text(
+                    'Demo Mode Active: Core Calculator & Executive Dashboard',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF92400E),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Adjust retirement years, mutual funds, SIP, EPF/PPF, and expected returns. Outputs and the top executive dashboard recalculate in real time.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF92400E),
+                    ),
+                  ),
+                ] else ...[
+                  const Text(
+                    'Enter fields in Section 1 to dynamically recalculate year Year-By-Year Corpus and FIRE targets.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF92400E),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
+          if (isDemo) ...[
+            const SizedBox(width: 10),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: AppTheme.primaryNavy,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              icon: const Icon(Icons.login_rounded, size: 14),
+              label: const Text('Sign In', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+              onPressed: () => widget.authService?.exitDemoMode(),
+            ),
+          ],
         ],
       ),
     );
@@ -1725,6 +1788,45 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   }
 
   void _promptSaveCombination(BuildContext context) {
+    if (widget.authService?.isDemoMode == true) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.lock_rounded, color: Color(0xFFD97706), size: 22),
+              SizedBox(width: 10),
+              Text('Sign In to Save Models', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            ],
+          ),
+          content: const Text(
+            'Saving and comparing up to 5 custom scenario models is available with a registered account. Sign in or register now to unlock persistent history.',
+            style: TextStyle(fontSize: 13),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Stay in Demo'),
+            ),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: AppTheme.primaryGreen,
+                foregroundColor: Colors.white,
+              ),
+              icon: const Icon(Icons.login_rounded, size: 16),
+              label: const Text('Sign In / Register', style: TextStyle(fontWeight: FontWeight.bold)),
+              onPressed: () {
+                Navigator.pop(ctx);
+                widget.authService?.exitDemoMode();
+              },
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     final TextEditingController nameController = TextEditingController(
       text: '${widget.controller.inputs.targetYears.toInt()}Y • ${CurrencyFormatter.formatCompactINR(widget.controller.inputs.currentMonthlyExpenses)}/mo',
     );

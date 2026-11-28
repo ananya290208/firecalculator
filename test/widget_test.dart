@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fire_calculator/controllers/fire_calculator_controller.dart';
 import 'package:fire_calculator/main.dart';
 import 'package:fire_calculator/models/physical_assets_models.dart';
+import 'package:fire_calculator/services/auth_service.dart';
 import 'package:fire_calculator/services/history_service.dart';
 import 'package:fire_calculator/widgets/exit_dialog.dart';
 
@@ -186,5 +187,66 @@ void main() {
     expect(find.text('Exit Application'), findsOneWidget);
     expect(find.text('Cancel'), findsOneWidget);
     expect(find.text('Exit'), findsOneWidget);
+  });
+
+  testWidgets('AuthScreen displays Demo - FIRE Calculator button and clicking it enters demo mode with locked tabs', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1280, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    SharedPreferences.setMockInitialValues({});
+    final historyService = HistoryService();
+    await historyService.loadHistory();
+    final authService = AuthService();
+    await authService.init();
+    final controller = FireCalculatorController(historyService: historyService);
+
+    await tester.pumpWidget(FireCalculatorApp(
+      controller: controller,
+      authService: authService,
+    ));
+    await tester.pumpAndSettle();
+
+    // Verify AuthScreen is showing the Demo - FIRE Calculator button
+    final demoBtn = find.byKey(const ValueKey('demo_calculator_button'));
+    expect(demoBtn, findsOneWidget);
+    expect(find.text('FREE PREVIEW'), findsOneWidget);
+
+    // Scroll into view if needed and tap
+    await tester.ensureVisible(demoBtn);
+    await tester.tap(demoBtn);
+    await tester.pumpAndSettle();
+
+    // Verify Demo mode is activated and loaded directly into Calculator view
+    expect(authService.isDemoMode, true);
+    expect(find.text('FIRE Simulator (INR)'), findsOneWidget);
+    expect(find.text('1. YOUR INPUTS & ASSUMPTIONS'), findsOneWidget);
+    expect(find.text('2. LIVE RETIREMENT READINESS OUTPUTS'), findsOneWidget);
+    expect(find.text('TOTAL NET WORTH TODAY'), findsOneWidget);
+
+    // Verify non-calculator tabs are marked with lock icon/text
+    expect(find.text('Executive Dashboard 🔒'), findsOneWidget);
+    expect(find.text('Liabilities & EMI 🔒'), findsOneWidget);
+    expect(find.text('Milestones & Life Events 🔒'), findsOneWidget);
+
+    // Tap a locked tab (Liabilities & EMI 🔒)
+    await tester.tap(find.text('Liabilities & EMI 🔒'));
+    await tester.pumpAndSettle();
+
+    // Verify locked dialog appears
+    expect(find.text('Liabilities & EMI Locked in Demo'), findsOneWidget);
+    expect(find.text('Stay in Demo'), findsOneWidget);
+    expect(find.text('Sign In / Register'), findsAtLeastNWidgets(1));
+
+    // Tap Stay in Demo
+    await tester.tap(find.text('Stay in Demo'));
+    await tester.pumpAndSettle();
+
+    // Still in demo mode on Calculator
+    expect(authService.isDemoMode, true);
+    expect(find.text('FIRE Simulator (INR)'), findsOneWidget);
   });
 }

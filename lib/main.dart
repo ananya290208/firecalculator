@@ -60,7 +60,7 @@ class FireCalculatorApp extends StatelessWidget {
           ? ListenableBuilder(
               listenable: effectiveAuth,
               builder: (context, _) {
-                return effectiveAuth.isLoggedIn
+                return (effectiveAuth.isLoggedIn || effectiveAuth.isDemoMode)
                     ? MainNavigationScreen(
                         controller: controller,
                         authService: effectiveAuth,
