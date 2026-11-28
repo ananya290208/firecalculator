@@ -249,4 +249,63 @@ void main() {
     expect(authService.isDemoMode, true);
     expect(find.text('FIRE Simulator (INR)'), findsOneWidget);
   });
+
+  testWidgets("Website shell displays Ananya's banner with 4 tabs and shows under construction popup", (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1280, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    SharedPreferences.setMockInitialValues({});
+    final historyService = HistoryService();
+    await historyService.loadHistory();
+    final controller = FireCalculatorController(historyService: historyService);
+
+    await tester.pumpWidget(FireCalculatorApp(controller: controller));
+    await tester.pumpAndSettle();
+
+    // Verify top banner elements
+    expect(find.text("Ananya's"), findsOneWidget);
+    expect(find.text('PORTAL'), findsOneWidget);
+    expect(find.text('FIRE Calculator'), findsOneWidget);
+    expect(find.text('Financial Planning'), findsOneWidget);
+    expect(find.text('Patent Filing'), findsOneWidget);
+    expect(find.text('About Us'), findsOneWidget);
+
+    // Click Financial Planning tab -> triggers Under Construction popup
+    await tester.tap(find.text('Financial Planning'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Under Construction'), findsOneWidget);
+    expect(find.textContaining('The Financial Planning module is currently under active construction'), findsOneWidget);
+    expect(find.text('Back to FIRE Calculator'), findsOneWidget);
+
+    // Tap Back to FIRE Calculator -> returns to FIRE app
+    await tester.tap(find.text('Back to FIRE Calculator'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('FIRE & Net Worth Dashboard'), findsOneWidget);
+
+    // Click Patent Filing tab -> triggers Under Construction popup
+    await tester.tap(find.text('Patent Filing'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Under Construction'), findsOneWidget);
+    expect(find.textContaining('The Patent Filing module is currently under active construction'), findsOneWidget);
+
+    // Dismiss dialog with Stay on this Page
+    await tester.tap(find.text('Stay on this Page'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('MODULE IN DEVELOPMENT'), findsOneWidget);
+    expect(find.text('Return to FIRE Calculator'), findsOneWidget);
+
+    // Tap Return to FIRE Calculator on under construction screen
+    await tester.tap(find.text('Return to FIRE Calculator'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('FIRE & Net Worth Dashboard'), findsOneWidget);
+  });
 }

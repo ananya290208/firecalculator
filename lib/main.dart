@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'controllers/fire_calculator_controller.dart';
-import 'screens/auth_screen.dart';
-import 'screens/main_navigation_screen.dart';
+import 'screens/website_shell.dart';
 import 'services/auth_service.dart';
 import 'services/history_service.dart';
 import 'theme/app_theme.dart';
@@ -56,19 +55,10 @@ class FireCalculatorApp extends StatelessWidget {
           child: child!,
         );
       },
-      home: effectiveAuth != null
-          ? ListenableBuilder(
-              listenable: effectiveAuth,
-              builder: (context, _) {
-                return (effectiveAuth.isLoggedIn || effectiveAuth.isDemoMode)
-                    ? MainNavigationScreen(
-                        controller: controller,
-                        authService: effectiveAuth,
-                      )
-                    : AuthScreen(authService: effectiveAuth);
-              },
-            )
-          : MainNavigationScreen(controller: controller),
+      home: WebsiteShell(
+        controller: controller,
+        authService: effectiveAuth,
+      ),
     );
   }
 }
